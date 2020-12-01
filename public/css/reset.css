@@ -1,0 +1,69 @@
+/*=== CSS Reset ===*/
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: 'Varela Round', sans-serif;
+  background-color: rgb(40, 40, 40);
+  color: white;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a,
+h1,
+h2,
+h3,
+p,
+button {
+  color: rgb(228, 227, 227);
+}
+
+ul li {
+  list-style-type: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+input {
+  border-radius: 5px;
+  padding: .375rem .75rem;
+  margin-bottom: 0.5em;
+  margin-right: 1em;
+  background-color: rgb(54, 54, 54);
+  border: none
+}
+
+/* width */
+::-webkit-scrollbar {
+  z-index: 1000;
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
