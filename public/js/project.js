@@ -1,9 +1,20 @@
+const projectIdQuery = window.location.search;
+let projectId = new URLSearchParams(projectIdQuery).get('id');
+projectId = Number(projectId);
+
+if (!projectId) {
+    window.location = `${window.location.protocol}//${window.location.hostname}:3000/404.html`;
+} else {
+	getProjectInfo();
+}
+
+
 const taskBtn = document.getElementsByClassName("task-form-btn");
 const createTask = document.getElementById("create-task-btn");
 const taskBox = document.getElementById("task-box");
 const taskPopUp = document.getElementById("task-pop-up");
-
 const closeForm = document.getElementsByClassName("close");
+// const taskDropdown = document.getElementsByClassName('fa-caret-down')
 
 // 先按group btn來創造section後，才能夠創造task
 const sectionBtn = document.getElementById("section-form-btn");
@@ -20,7 +31,7 @@ const dragulaProject = dragula([
 	], 
 	{
 		moves: (el, container, handle) => {
-    	return handle.hasAttribute('section-id');
+    	return handle.classList.contains('fa-arrows-alt');
 	  }
 	}
 );
@@ -120,70 +131,43 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 		console.log(error)
 	})
 });
-
+ 
 // task and block rendering
-fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list`)
-.then(res => res.json())
-.then(result => {
-	const { data } =  result;
+function getProjectInfo() {
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list?id=${projectId}`)
+	.then(res => res.json())
+	.then(result => {
+		const { data } =  result;
 
-	for (let i = 0; i < data.length; i++) {
-		const section = document.createElement('div');
-		section.classList.add('section-container');
-		section.setAttribute('section-id', data[i].id)
-		section.setAttribute("section-order", data[i].section_order);
+		for (let i = 0; i < data.length; i++) {
+			let tContainer = createSectionElement(data[i].name, data[i].section_order, data[i].id);
 
-		const sectionTitle = document.createElement('div');
-		sectionTitle.classList.add('section-title');
+			if (data[i].tasks) {
+				for (let j = 0; j < data[i].tasks.length; j ++) {
+					let currentTask = data[i].tasks[j];
 
-		const sectionName = document.createElement('p');
-		sectionName.innerHTML = data[i].name;
+					const task = document.createElement('div');
+					task.classList.add('task-block');
+					task.id = currentTask.task_id;
 
-		const sectionCross = document.createElement('i');
-		sectionCross.classList.add("fa", "fa-times");
-		sectionCross.setAttribute("aria-hidden", true)
-		
-		sectionTitle.append(sectionName, sectionCross);
+					const taskName = document.createElement('p');
+					taskName.classList.add('name');
+					taskName.innerText = currentTask.name;
 
-		const tContainer = document.createElement('div');
-		tContainer.classList.add("task-container");
-		tContainer.innerHTML = "&nbsp;"
-		
-		const btn = document.createElement('button');
-		btn.type = "submit";
-		btn.classList.add("btn", "btn-outline-warning", "task-form-btn", "btn-block");
-		btn.innerHTML = "Add new task";
-		btn.addEventListener("click", showTaskForm);
+					const taskDescription = document.createElement('p');
+					taskDescription.classList.add('description');
+					taskDescription.innerText = currentTask.description;
 
-		if (data[i].tasks) {
-			for (let j = 0; j < data[i].tasks.length; j ++) {
-				let currentTask = data[i].tasks[j];
-
-				const task = document.createElement('div');
-				task.classList.add('task-block');
-				task.id = currentTask.task_id;
-
-				const taskName = document.createElement('p');
-				taskName.classList.add('name');
-				taskName.innerText = currentTask.name;
-
-				const taskDescription = document.createElement('p');
-				taskDescription.classList.add('description');
-				taskDescription.innerText = currentTask.description;
-
-				task.append(taskName, taskDescription);
-				tContainer.appendChild(task);
+					task.append(taskName, taskDescription);
+					tContainer.appendChild(task);
+				}
 			}
 		}
-
-		section.append(sectionTitle, tContainer, btn);
-		projectContainer.appendChild(section);
-		dragulaTasks.containers.push(tContainer);
-	}
-})
-.catch(error => {
-	console.log(error)
-})
+	})
+	.catch(error => {
+		console.log(error)
+	})
+}
 
 // acquire element location
 function getIndexInParent (el) {
@@ -195,51 +179,24 @@ async function addSection(e) {
 	e.preventDefault();
 
     let name = document.getElementById("section-name");
-	const section = document.createElement('div');
-	section.classList.add('section-container');
+	name = name.value;
 
-	const sectionTitle = document.createElement('div');
-	sectionTitle.classList.add('section-title');
-
-	const sectionName = document.createElement('p');
-	sectionName.innerHTML = name.value;
-
-	const sectionCross = document.createElement('i');
-	sectionCross.classList.add("fa", "fa-times");
-	sectionCross.setAttribute("aria-hidden", true)
-	
-	sectionTitle.append(sectionName, sectionCross);
-
-	const tContainer = document.createElement('div');
-	tContainer.classList.add("task-container");
-	tContainer.innerHTML = "&nbsp;"
-	
-	const btn = document.createElement('button');
-	btn.type = "submit";
-	btn.classList.add("btn", "btn-outline-warning", "task-form-btn", "btn-block");
-	btn.innerHTML = "Add new task";
-	btn.addEventListener("click", showTaskForm);
-	section.append(sectionTitle, tContainer, btn);
-	
-	projectContainer.appendChild(section);
 	let section_order;
 	for (let i = 0; i < projectContainer.childElementCount; i++) {
 		section_order = i;
-		section.setAttribute("section-order", section_order);
 	}
 
 	const sectionInfo = {
-		name: name.value,
-		section_order: section_order
+		name: name,
+		section_order: section_order,
+		project_id: projectId
 	}
 
 	const sectionId = await getSectionId(sectionInfo);
-	console.log(sectionId);
-	section.setAttribute("section-id", sectionId);
 
-	dragulaTasks.containers.push(tContainer);
+	createSectionElement(name, section_order, sectionId);
+
 	sectionPopUp.style.display = "none";
-
 	name.value = '';
 }
 
@@ -339,9 +296,94 @@ function showSectionForm() {
 	sectionPopUp.style.display = "block";
 }
 
+// show all tasks
+function showTaskContainer(e) {
+	let dropdownIcon = e.target;
+	if (dropdownIcon.classList.contains('fa-caret-down')) {
+		let tasks = e.target.parentNode.parentNode.nextElementSibling;
+		if (tasks.style.display === "block") {
+			dropdownIcon.style.transform = "rotate(270deg)";
+			tasks.style.display = "none"
+		} else {
+			dropdownIcon.style.transform = "rotate(360deg)";
+			tasks.style.display = "block"
+		}
+	}
+}
+
 function closePopUp(e) {
 	let target = e.target.parentNode.parentNode.parentNode;
 	if (target === sectionPopUp || target === taskPopUp) {
 		target.style.display = "none";
 	}
 }
+
+// 要建立一個section，必須要有名稱、順序與id
+function createSectionElement(sectionName, sectionOrder, sectionId) {
+	// section中有三個main element，section-header、task-container，與add task btn
+	const sectionContainer = document.createElement('div');
+	sectionContainer.classList.add('section-container');
+	sectionContainer.setAttribute("section-order", sectionOrder);
+	sectionContainer.setAttribute("section-id", sectionId);
+
+	// section-header
+	const sectionHeader = document.createElement('div');
+	sectionHeader.classList.add('section-header');
+
+	const sectionHandleBar = document.createElement('div');
+	sectionHandleBar.classList.add('section-handle-bar');
+
+	const handlerIcon = document.createElement('i');
+	handlerIcon.classList.add("fa", "fa-arrows-alt", "fa-sm");
+	handlerIcon.setAttribute("aria-hidden", true);
+
+	const dropdownIcon = document.createElement('i');
+	dropdownIcon.classList.add("fa", "fa-caret-down", "fa-lg");
+	dropdownIcon.setAttribute("aria-hidden", true);
+	dropdownIcon.addEventListener('click', showTaskContainer);
+
+	sectionHandleBar.append(handlerIcon, dropdownIcon);
+
+	const sectionTitle = document.createElement('div');
+	sectionTitle.classList.add('section-title');
+
+	const sectionTitleSpan = document.createElement('span');
+	sectionTitleSpan.innerHTML = sectionName;
+
+	sectionTitle.append(sectionTitleSpan);
+
+	const sectionRemove = document.createElement('div');
+	sectionRemove.classList.add('section-remove');
+
+	const removeIcon = document.createElement('i');
+	removeIcon.classList.add("fa", "fa-trash", "fa-lg");
+	removeIcon.setAttribute("aria-hidden", true);
+
+	sectionRemove.append(removeIcon);
+
+	sectionHeader.append(sectionHandleBar, sectionTitle, sectionRemove);
+	
+	// task-container
+	const tContainer = document.createElement('div');
+	tContainer.classList.add("task-container");
+	tContainer.innerHTML = "&nbsp;"
+
+	// add task btn
+	const btn = document.createElement('button');
+	btn.type = "submit";
+	btn.classList.add("btn", "btn-outline-warning", "task-form-btn", "btn-block");
+	btn.innerHTML = "Add new task";
+	btn.addEventListener("click", showTaskForm);
+
+	dragulaTasks.containers.push(tContainer);
+	sectionContainer.append(sectionHeader, tContainer, btn)
+	projectContainer.appendChild(sectionContainer);
+
+	return tContainer;
+}
+
+// 要建立一個task，必須要有名稱、順序與id
+// 待處理
+function createTaskElement(sectionName, sectionOrder, sectionId) {
+}
+

@@ -1,5 +1,4 @@
-// const { insertData, getData, updateData, startTransaction, endWithCommit, rollback } = require("./db");
-const { query, startTransaction, endWithCommit, rollback } = require('./db')
+const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon')
 
 // 新增task前先檢查以防撞車
 const checkNewTaskOrder = async (task) => {
@@ -113,17 +112,6 @@ const updateTaskOrder = async (updateTask) => {
     }
 }
 
-// 未完成，還需要額外參數做篩選，目前進展到結合section與task，最後要做到用project一支api撈出 project中的所有
-// const getTasks = async () => {
-//     const result = await query(`SELECT t.id AS task_id, t.name, t.description, t.section_id, s.name AS section_name, t.task_order FROM section s INNER JOIN task t WHERE s.id=t.section_id;`);
-//     return result;
-// }
-
-const getSections = async () => {
-    const result = await query(`SELECT id, name, section_order FROM section;`);
-    return result;
-}
-
 const getTasks = async (sectionIds) => {
     const result = await query(`SELECT id, name, description, section_id, task_order FROM task WHERE section_id IN (?) ORDER BY task_order;`, [sectionIds]);
     return result;
@@ -135,8 +123,5 @@ module.exports = {
     createTask,
     checkTask,
     updateTaskOrder,
-    // getTasks
-
-    getSections,
     getTasks
 };

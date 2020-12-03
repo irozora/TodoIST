@@ -26,7 +26,8 @@ h1,
 h2,
 h3,
 p,
-button {
+button,
+input {
   color: rgb(228, 227, 227);
 }
 
@@ -36,6 +37,11 @@ ul li {
 
 a {
   text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+  color: white
 }
 
 input {

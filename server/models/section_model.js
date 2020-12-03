@@ -1,4 +1,4 @@
-const { query, startTransaction, endWithCommit, rollback } = require('./db')
+const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon')
 
 const createSection = async (section) => {
     try {
@@ -31,8 +31,14 @@ const updateSectionOrder = async (updateSection) => {
     }
 }
 
+const getSections = async ( projectId ) => {
+    const result = await query(`SELECT id, name, section_order FROM section WHERE project_id = ?;`, projectId);
+    return result;
+}
+
 module.exports = { 
     createSection,
     checkSection,
-    updateSectionOrder
+    updateSectionOrder,
+    getSections
 };

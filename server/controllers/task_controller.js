@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Task = require("../models/task_model");
+const Section = require('../models/section_model')
 
 // 單純新增task的功能，需要加上section_id，目前前端沒有拋相關資訊過來
 const createTask = async (req, res) => {
@@ -123,8 +124,16 @@ const updateTaskOrder = async (req, res) => {
 
 // 撈task資料，還需要別的參數
 const getTasks = async (req, res) => {
-    let data = await Task.getSections();
-    data = await getTasksWithDetail(data);
+    const projectId = Number(req.query.id);
+
+    let data = await Section.getSections(projectId);
+
+    if (!data.length) {
+        return res.status(200).send({ data: {} });
+    } else {
+        data = await getTasksWithDetail(data);
+    }
+
     return res.status(200).send({ data });
 };
 
