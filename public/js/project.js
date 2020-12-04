@@ -8,6 +8,7 @@ if (!projectId) {
 	getProjectInfo();
 }
 
+const socket = io();
 
 const taskBtn = document.getElementsByClassName("task-form-btn");
 const createTask = document.getElementById("create-task-btn");

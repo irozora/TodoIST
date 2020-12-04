@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { wrapAsync } = require('../../util/util');
+const { wrapAsync } = require('../util/util');
 const { createTask, updateTaskOrder, getTasks } = require("../controllers/task_controller");
 
 router.route('/task/create')

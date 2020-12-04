@@ -4,6 +4,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 const bodyParser = require("body-parser");
 
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const { socketCon } = require('./server/util/socketCon')
+socketCon(io);
+
 // Setup for using static files in express
 app.use(express.static("public"));
 
@@ -30,6 +35,6 @@ app.use((err, req, res, next) => {
 })
 
 
-app.listen(port, () => {
+http.listen(port, () => {
     console.log(`App is currently listening on http://localhost:${port}`);
 });
