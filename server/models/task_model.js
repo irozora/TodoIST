@@ -62,16 +62,19 @@ const checkTask = async (taskId) => {
 }
 
 // 這段要改寫...沒有考慮到有兩個block的情形
-const updateTaskOrder = async (updateTask) => {
-    const { deleteTask, moveTask, update } = updateTask;
+const updateTaskOrder = async (data) => {
+    const { deleteTask, moveTask, update } = data;
 
     let updateOriginSection = `UPDATE task SET task_order = task_order`;
-    if (update[0].move) {
-        updateOriginSection += `+1 `;
-    } else {
-        updateOriginSection += `-1 `;
+    switch (update[0].move) {
+        case 0: 
+            updateOriginSection += `-1`;
+            break;
+        case 1:
+            updateOriginSection += `+1`;
+            break;            
     }
-    updateOriginSection += `WHERE section_id=? AND task_order BETWEEN ? AND ?;`;
+    updateOriginSection += ` WHERE section_id=? AND task_order BETWEEN ? AND ?;`;
 
     let updateNewSection;
     if (update.length === 2) {

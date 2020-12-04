@@ -4,7 +4,6 @@ const Section = require('../models/section_model')
 
 // 單純新增task的功能，需要加上section_id，目前前端沒有拋相關資訊過來
 const createTask = async (req, res) => {
-    console.log(req.body)
     const { body } = req;
     const { name, description } = body;
     const task_order = Number(body.task_order);
@@ -66,11 +65,12 @@ const createTask = async (req, res) => {
 }
 */
 
+// 移動task或刪除task，會改變順序的都打這支
 const updateTaskOrder = async (req, res) => {
     const { delete_task, move_task, update } = req.body;
 
     if (!delete_task && !move_task) {
-        return res.status(400).json({ error: "Required at least delete or add one task to update!" });
+        return res.status(400).json({ error: "Please delete or add one task to update!" });
     }
     
     if (!update) {
@@ -78,21 +78,11 @@ const updateTaskOrder = async (req, res) => {
     }
 
     let checkId;
-    // 這邊重複太多次，要記得改寫
-    if (delete_task) {
-        if (typeof delete_task.id !== "number" || typeof delete_task.task_order !== "number" || typeof delete_task.section_id !== "number") {
-            return res.status(400).json({ error: "Data type incorrect for deleting task." });
-        } else {
-            checkId = delete_task.id;
-        }
-    }
-
-    if (move_task) {
-        if (typeof move_task.id !== "number" || typeof move_task.task_order !== "number" || typeof move_task.section_id !== "number") {
-            return res.status(400).json({ error: "Data type incorrect for adding task." });
-        } else {
-            checkId = move_task.id;
-        }
+    let action = delete_task || move_task;
+    if (typeof action.id !== "number" || typeof action.task_order !== "number"|| typeof action.section_id !== "number") {
+        return res.status(400).json({ error: "Data type incorrect for altering task." });
+    } else {
+        checkId = action.id;
     }
 
     for (let i = 0; i < update.length; i ++) {
@@ -116,7 +106,7 @@ const updateTaskOrder = async (req, res) => {
     const { updateOriginResult, result } = await Task.updateTaskOrder(data);
 
     if (updateOriginResult.errno || result.errno) {
-        return res.status(400).json({ error: result.code });
+        return res.status(400).json({ error: `Something wrong occur during update.` });
     }
 
     return res.status(200).json({ message: "Task order successfully updated!" });

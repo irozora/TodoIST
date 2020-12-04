@@ -3,7 +3,7 @@
   overflow:hidden;  
   position:absolute;
   height: 100%;
-  width: 20%;
+  width: 18%;
   background-color: rgb(58, 58, 58);
   display: flex;
   flex-direction: column;
@@ -155,7 +155,6 @@
 #project-container > * {
   margin: 1.2em auto;
   width: 80%;
-  border-bottom: 2px solid rgb(58, 58, 58);
   padding: 1em 2em;
 }
 
@@ -194,14 +193,35 @@
   display:none;
 }
 
-.section-container > .btn-block {
-  margin-top: 0.5em;
+.task-container {
+  margin: 0 auto;
+  width: 90%;
+  line-height: 0.9;
+}
+
+.section-container > .btn-block,
+#section-form-btn {
+  margin-top: 1.2em;
+  border: none;
+  text-align: left;
+  color: rgb(228, 227, 227);
+  line-height: 0.5;
+}
+
+.section-container > .btn-block:hover,
+#section-form-btn:hover {
+  background-color: transparent;
+  color: #ffc107;
+}
+
+.section-container > .btn-block:focus,
+#section-form-btn:focus {
+  box-shadow: none;
 }
 
 .section-title {
   display: flex;
   justify-content: space-between;
-  /* border-bottom: 2px solid rgb(58, 58, 58); */
   padding-left: 1em;
 }
 
@@ -223,6 +243,16 @@
   padding: 8px;
 }
 
-.btn-outline-warning {
-  border-width: 0.02em;
+/* ===== Custom sweet alert box ===== */
+.swal-modal{
+  background-color: rgb(58, 58, 58) !important;
+  width: 350px !important;
+}
+
+.swal-text {
+  color: rgb(228, 227, 227) !important;
+}
+
+.swal-button {
+  background-color: #e6ad03 !important;
 }

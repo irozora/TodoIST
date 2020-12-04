@@ -14,7 +14,6 @@ const createTask = document.getElementById("create-task-btn");
 const taskBox = document.getElementById("task-box");
 const taskPopUp = document.getElementById("task-pop-up");
 const closeForm = document.getElementsByClassName("close");
-// const taskDropdown = document.getElementsByClassName('fa-caret-down')
 
 // 先按group btn來創造section後，才能夠創造task
 const sectionBtn = document.getElementById("section-form-btn");
@@ -25,14 +24,14 @@ const projectContainer = document.getElementById("project-container");
 const taskContainer = document.getElementsByClassName("task-container");
 const dragulaTasks = dragula([ ...taskContainer ]);
 
-// 有draggable-wrapper這個屬性的child才能被拖曳
+// 有fa-arrows-alt這個class的child的parent才能被拖曳
 const dragulaProject = dragula([ 
-		projectContainer,
+		projectContainer
 	], 
 	{
 		moves: (el, container, handle) => {
-    	return handle.classList.contains('fa-arrows-alt');
-	  }
+    		return handle.classList.contains('fa-arrows-alt');
+		}
 	}
 );
 
@@ -47,6 +46,11 @@ let taskId;
 let taskOriginOrder;
 let taskNewOrder;
 
+// Variables to change order of section
+let sectionId;
+let sectionOriginOrder;
+let sectionNewOrder;
+
 sectionBtn.addEventListener('click', showSectionForm);
 createSection.addEventListener("click", addSection);
 createTask.addEventListener('click', addTask);
@@ -56,7 +60,7 @@ for (let i = 0; i < closeForm.length; i ++) {
 	closeForm[i].addEventListener("click", closePopUp);
 }
 
-// drag時獲取element位置
+// 調整task位置的drag and drop event
 dragulaTasks.on('drag', (el, source) => {
 	taskId = Number(el.id);
 	taskOriginOrder = Number(getIndexInParent(el));
@@ -92,7 +96,6 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 		}
 
 		update.push(updateObj);
-		console.log(update[0])
 	} else {
 		// originSectionId !== newSectionId
 		let updateObj = {
@@ -116,7 +119,7 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 	};
 
 	// 使用者放開卡片才透過ajax與後湍連動
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/updateOrder`, {
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/update`, {
 		method: 'POST',
 		headers: {
     		'Content-Type': 'application/json'
@@ -132,6 +135,59 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 	})
 });
  
+// 調整section位置的drag and drop event
+dragulaProject.on('drag', (el, source) => {
+	sectionId = Number(el.getAttribute("section-id"));
+	sectionOriginOrder = Number(getIndexInParent(el));
+});
+
+dragulaProject.on('drop', (el, target, source, sibling) => {
+	sectionNewOrder = Number(getIndexInParent(el));
+	
+	let move_section = {
+		id: sectionId,
+		section_order: sectionNewOrder
+	}
+
+	let update = {
+		project_id: projectId
+	};
+	if (sectionOriginOrder > sectionNewOrder) {
+		update.move = 1;
+		update.from = sectionNewOrder;
+		update.end = sectionOriginOrder - 1;
+	} 
+	if (sectionOriginOrder < sectionNewOrder) {
+		update.move = 0;
+		update.from = sectionOriginOrder + 1;
+		update.end = sectionNewOrder;
+	}
+
+	let data = {
+		move_section,
+		update
+	}
+
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/update`, {
+		method: 'POST',
+		headers: {
+    		'Content-Type': 'application/json'
+	    },
+		body: JSON.stringify(data)
+	})
+	.then(res => {
+		console.log(res.status)
+		return res.json();
+	})
+	.then(result => {
+		console.log(result);
+	})
+	.catch(error => {
+		console.log(error)
+	})
+});
+
+
 // task and block rendering
 function getProjectInfo() {
 	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list?id=${projectId}`)
@@ -179,22 +235,27 @@ async function addSection(e) {
 	e.preventDefault();
 
     let name = document.getElementById("section-name");
-	name = name.value;
+	sectionName = name.value;
+
+	if (!sectionName.trim()) {
+		swal(`Section name is required!`);
+		return;
+	}
 
 	let section_order;
 	for (let i = 0; i < projectContainer.childElementCount; i++) {
-		section_order = i;
+		section_order = projectContainer.childElementCount;
 	}
 
 	const sectionInfo = {
-		name: name,
+		name: sectionName,
 		section_order: section_order,
 		project_id: projectId
 	}
 
 	const sectionId = await getSectionId(sectionInfo);
 
-	createSectionElement(name, section_order, sectionId);
+	createSectionElement(sectionName, section_order, sectionId);
 
 	sectionPopUp.style.display = "none";
 	name.value = '';
@@ -203,8 +264,8 @@ async function addSection(e) {
 // async function use to create task
 async function addTask (e) {
 	e.preventDefault();
-	console.log(e.target)
-    const name = document.getElementById("task-name");
+
+	const name = document.getElementById("task-name");
     const description = document.getElementById("task-description");
 
 	const task = document.createElement('div');
@@ -221,7 +282,6 @@ async function addTask (e) {
 	task.append(taskName, taskDescription);
 
 	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
-	console.log(targetTaskContainer);
 	targetTaskContainer.appendChild(task);
 
     taskPopUp.style.display = "none";
@@ -233,11 +293,10 @@ async function addTask (e) {
 		taskInfo.task_order = targetTaskContainer.childElementCount - 1;
 	}
 
-	// section_id以draggable-wrapper的數字(section在db中的id)為準
+	// section_id以section-id的數字(section在db中的id)為準
 	taskInfo.section_id = Number(targetTaskContainer.parentNode.getAttribute("section-id"));
 
 	task.id = await getTaskId(taskInfo);
-	console.log(task.id)
 
 	name.value = '';
 	description.value = '';
@@ -371,8 +430,8 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	// add task btn
 	const btn = document.createElement('button');
 	btn.type = "submit";
-	btn.classList.add("btn", "btn-outline-warning", "task-form-btn", "btn-block");
-	btn.innerHTML = "Add new task";
+	btn.classList.add("btn", "task-form-btn", "btn-block");
+	btn.innerHTML = "+ Add task";
 	btn.addEventListener("click", showTaskForm);
 
 	dragulaTasks.containers.push(tContainer);
@@ -384,6 +443,6 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 
 // 要建立一個task，必須要有名稱、順序與id
 // 待處理
-function createTaskElement(sectionName, sectionOrder, sectionId) {
+function createTaskElement(taskName, taskOrder, taskId) {
 }
 

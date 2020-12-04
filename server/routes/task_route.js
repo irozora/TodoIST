@@ -5,7 +5,7 @@ const { createTask, updateTaskOrder, getTasks } = require("../controllers/task_c
 router.route('/task/create')
     .post(wrapAsync(createTask));
 
-router.route('/task/updateOrder')
+router.route('/task/update')
     .post(wrapAsync(updateTaskOrder));
 
 router.route('/task/list')
