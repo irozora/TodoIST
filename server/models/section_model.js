@@ -18,6 +18,7 @@ const checkSection = async (sectionId) => {
     return result;
 }
 
+// 移動或刪除section都會依此進行調整
 const updateSectionOrder = async (data) => {
     const { deleteSection, moveSection, update } = data;
 
@@ -58,9 +59,23 @@ const getSections = async ( projectId ) => {
     return result;
 }
 
+// 每個section能被編輯的只有名稱
+const editSection = async (sectionId, sectionName) => {
+    try {
+        await startTransaction();
+        const result = await query(`UPDATE section SET name = ? WHERE id = ?`, [sectionName, sectionId])
+        await endWithCommit();
+        return result;
+    } catch (error) {
+        await rollback();
+        return error;
+    }
+}
+
 module.exports = { 
     createSection,
     checkSection,
     updateSectionOrder,
-    getSections
+    getSections,
+    editSection
 };

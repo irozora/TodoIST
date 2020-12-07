@@ -36,6 +36,28 @@ const dragulaProject = dragula([
 	}
 );
 
+const datePickerField = document.getElementById('datepicker');
+const datePicker = new Pikaday({ 
+	field: datePickerField ,
+    format: 'D/M/YYYY',
+    toString(date, format) {
+        // you should do formatting based on the passed format,
+        // but we will just return 'D/M/YYYY' for simplicity
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return `${year}/${month}/${day}`;
+    },
+    parse(dateString, format) {
+        // dateString is the result of `toString` method
+        const parts = dateString.split('/');
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        return new Date(year, month, day);
+    }
+});
+
 let targetSection;
 
 // 若originalSection等於newSection，update陣列裡只要一個object；不等於則需要兩個
@@ -132,7 +154,7 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 		console.log(result);
 	})
 	.catch(error => {
-		console.log(error)
+		console.log(error);
 	})
 });
  
@@ -148,8 +170,7 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 	let move_section = {
 		id: sectionId,
 		section_order: sectionNewOrder
-	}
-
+	};
 	let update = {
 		project_id: projectId
 	};
@@ -157,39 +178,23 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 		update.move = 1;
 		update.from = sectionNewOrder;
 		update.end = sectionOriginOrder - 1;
-	} 
+	};
 	if (sectionOriginOrder < sectionNewOrder) {
 		update.move = 0;
 		update.from = sectionOriginOrder + 1;
 		update.end = sectionNewOrder;
-	}
+	};
 
 	let data = {
 		move_section,
 		update
-	}
+	};
 
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/update`, {
-		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
-		body: JSON.stringify(data)
-	})
-	.then(res => {
-		console.log(res.status)
-		return res.json();
-	})
-	.then(result => {
-		console.log(result);
-	})
-	.catch(error => {
-		console.log(error)
-	})
+	updateSectionOrder(data);
 });
 
 
-// task and block rendering
+// task and section rendering
 function getProjectInfo() {
 	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list?id=${projectId}`)
 	.then(res => res.json())
@@ -371,10 +376,41 @@ function showTaskContainer(e) {
 	}
 }
 
+// function to close pop up forms
 function closePopUp(e) {
 	let target = e.target.parentNode.parentNode.parentNode;
 	if (target === sectionPopUp || target === taskPopUp) {
 		target.style.display = "none";
+	}
+}
+
+// function to replace section title span with form(with input and buttons)
+function editSectionForm(e) {
+	const sectionSpan = e.target;
+	if (sectionSpan.classList.contains('section-name')) {
+		let name = sectionSpan.innerHTML;
+		console.log(name);
+		sectionSpan.style.display = 'none';
+		
+		const form = document.createElement('form');
+		const input = document.createElement('input');
+		input.classList.add("rename-section-input")
+		input.type = "text";
+		input.value = name;
+		const saveBtn = document.createElement('button');
+		saveBtn.classList.add("rename-section-btn", "btn");
+		saveBtn.type = "submit";
+		saveBtn.innerHTML = "Save";
+		saveBtn.addEventListener("click", saveSectionEdit);
+
+		const cancelBtn = document.createElement('button');
+		cancelBtn.classList.add("cancel-section-rename-btn", "btn");
+		cancelBtn.type = "submit";
+		cancelBtn.innerHTML = "Cancel";
+		cancelBtn.addEventListener("click", cancelSectionEdit);
+
+		form.append(input, saveBtn, cancelBtn);
+		sectionSpan.parentNode.append(form);
 	}
 }
 
@@ -400,6 +436,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	const dropdownIcon = document.createElement('i');
 	dropdownIcon.classList.add("fa", "fa-caret-down", "fa-lg");
 	dropdownIcon.setAttribute("aria-hidden", true);
+	// event for dropping down task container
 	dropdownIcon.addEventListener('click', showTaskContainer);
 
 	sectionHandleBar.append(handlerIcon, dropdownIcon);
@@ -408,6 +445,9 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	sectionTitle.classList.add('section-title');
 
 	const sectionTitleSpan = document.createElement('span');
+	sectionTitleSpan.classList.add('section-name');
+	sectionTitleSpan.setAttribute("section-id", sectionId);
+	sectionTitleSpan.addEventListener('click', editSectionForm);
 	sectionTitleSpan.innerHTML = sectionName;
 
 	sectionTitle.append(sectionTitleSpan);
@@ -416,9 +456,9 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	sectionRemove.classList.add('section-remove');
 
 	const removeIcon = document.createElement('i');
-	removeIcon.classList.add("fa", "fa-trash", "fa-lg");
+	removeIcon.classList.add("fa", "fa-trash", "fa-lg", "remove-section-icon");
 	removeIcon.setAttribute("aria-hidden", true);
-
+	removeIcon.addEventListener("click", removeSection);
 	sectionRemove.append(removeIcon);
 
 	sectionHeader.append(sectionHandleBar, sectionTitle, sectionRemove);
@@ -433,6 +473,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	btn.type = "submit";
 	btn.classList.add("btn", "task-form-btn", "btn-block");
 	btn.innerHTML = "+ Add task";
+	// event to show task form
 	btn.addEventListener("click", showTaskForm);
 
 	dragulaTasks.containers.push(tContainer);
@@ -447,3 +488,121 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 function createTaskElement(taskName, taskOrder, taskId) {
 }
 
+// save section edit
+function saveSectionEdit(e) {
+	e.preventDefault();
+	const sectionTitle = e.target.parentNode.parentNode;
+	const form = e.target.parentNode;
+	const inputBox = e.target.previousSibling;
+	let inputValue = inputBox.value;
+	inputValue = inputValue.trim();
+	const titleSpan = e.target.parentNode.previousSibling;
+	const sectionId = Number(titleSpan.getAttribute("section-id"));
+
+	if (!inputValue) {
+		swal(`Section name cannot be empty!`);
+		return;
+	}
+
+	sectionTitle.removeChild(form);
+	titleSpan.innerHTML = inputValue;
+	titleSpan.style.display = "block";
+	const data = {
+		name: inputValue
+	};
+
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/${sectionId}`, {
+		method: 'POST',
+		headers: {
+    		'Content-Type': 'application/json'
+	    },
+		body: JSON.stringify(data)
+	})
+	.then(res => res.json())
+	.then(result => {
+		console.log(result);
+	})
+	.catch(error => {
+		console.log(error)
+	})
+}
+
+// cancel section edit
+function cancelSectionEdit(e) {
+	e.preventDefault();
+	const form = e.target.parentNode;
+	const sectionTitle = e.target.parentNode.parentNode;
+	const titleSpan = e.target.parentNode.previousSibling;
+	titleSpan.style.display = "block";
+	sectionTitle.removeChild(form);
+}
+
+// delete section and alter section order of remaining sections
+function removeSection(e) {
+	const removeBtn = e.target;
+	if (removeBtn.classList.contains("fa-trash")) {
+		const targetSection = removeBtn.parentNode.parentNode.parentNode;
+		const projectContainer = targetSection.parentNode;
+		sectionId = Number(targetSection.getAttribute("section-id"));
+		sectionOriginOrder = Number(targetSection.getAttribute("section-order"));
+
+		const fromSectionOrder = sectionOriginOrder + 1;
+		const endSectionOrder = Number(projectContainer.lastChild.getAttribute("section-order"));
+
+		const delete_section = {
+			id: sectionId,
+			section_order: sectionOriginOrder
+		}
+
+		const update = {
+			project_id: projectId,
+			move: 0,
+			from: fromSectionOrder,
+			end: endSectionOrder
+		};
+
+		const data = {
+			delete_section,
+			update
+		}
+
+		swal({
+			title: `Are you sure you want to delete this section and tasks within?`,
+			text: `Once deleted, you will not be able to recover.`,
+			buttons: true
+		})
+		.then(result => {
+			if (result) {
+				for (let i = fromSectionOrder; i < projectContainer.children.length; i++ ) {
+					projectContainer.children[i].removeAttribute("section-order")
+					projectContainer.children[i].setAttribute("section-order", i - 1);
+				}
+
+				updateSectionOrder(data);
+				projectContainer.removeChild(targetSection);
+				swal("Section and tasks deleted!");
+			}
+		});
+	}
+}
+
+// send section order update info to back-end
+function updateSectionOrder(data) {
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/update`, {
+		method: 'POST',
+		headers: {
+    		'Content-Type': 'application/json'
+	    },
+		body: JSON.stringify(data)
+	})
+	.then(res => {
+		console.log(res.status)
+		return res.json();
+	})
+	.then(result => {
+		console.log(result);
+	})
+	.catch(error => {
+		console.log(error)
+	})
+}

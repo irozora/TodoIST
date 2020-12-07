@@ -60,7 +60,27 @@ const updateSectionOrder = async (req, res) => {
     return res.status(200).json({ message: "Section order successfully updated!" });
 }
 
+// 需要section id與欲更換成的section name
+const editSection = async (req, res) => {
+    const { body } = req;
+    const { name } = body;
+    const sectionId = Number(req.params.id);
+
+    const checkSection = await Section.checkSection(sectionId);
+    if (!checkSection.length) {
+        return res.status(400).json({ error: "Requested section id does not exist. Please try another." });
+    }
+
+    const result = await Section.editSection(sectionId, name);
+    if (result.errno) {
+        return res.status(400).json({ error: `Something is wrong for editing section name, please try another.` });
+    }
+
+    return res.status(200).json({ message: "Section name successfully updated!" });
+}
+
 module.exports = { 
     createSection,
-    updateSectionOrder
+    updateSectionOrder,
+    editSection
 };

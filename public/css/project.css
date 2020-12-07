@@ -37,7 +37,7 @@
 
 #profile-div > img {
   width: 150px;
-  height: 150px;
+  height: 180px;
   margin: 0 auto;
   border-radius: 1em;
 }
@@ -176,7 +176,6 @@
 }
 
 .section-header {
-  border-bottom: 1px solid rgb(58, 58, 58);
   padding-bottom: 0.5em;
 }
 
@@ -200,7 +199,8 @@
 }
 
 .section-container > .btn-block,
-#section-form-btn {
+#section-form-btn,
+.rename-section-btn {
   margin-top: 1.2em;
   border: none;
   text-align: left;
@@ -217,6 +217,30 @@
 .section-container > .btn-block:focus,
 #section-form-btn:focus {
   box-shadow: none;
+}
+
+.rename-section-btn,
+.rename-section-btn:hover {
+  padding: 10px;
+  background-color: #ee4b00;
+  color: rgb(228, 227, 227);
+  margin-top: 0;
+}
+
+.cancel-section-rename-btn,
+.cancel-section-rename-btn:hover {
+  padding: 10px;
+  color: rgb(228, 227, 227);
+  margin-top: 0;
+}
+
+.rename-section-input {
+  margin-bottom: 0;
+  line-height: 0;
+}
+
+.remove-section-icon {
+  cursor: pointer;
 }
 
 .section-title {
@@ -249,10 +273,20 @@
   width: 350px !important;
 }
 
+.swal-title,
 .swal-text {
   color: rgb(228, 227, 227) !important;
 }
 
+.swal-title:first-child {
+  margin-top: 13px !important;
+}
+
 .swal-button {
   background-color: #e6ad03 !important;
+}
+
+.swal-button--cancel {
+  background-color: transparent !important;
+  color: rgb(228, 227, 227) !important;
 }
