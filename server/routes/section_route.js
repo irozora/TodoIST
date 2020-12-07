@@ -8,7 +8,6 @@ router.route('/section/create')
 router.route('/section/update')
     .post(wrapAsync(updateSectionOrder));
 
-// 尚未實作前端
 router.route('/section/:id')
     .post(wrapAsync(editSection));
 

@@ -28,7 +28,7 @@ const dragulaTasks = dragula([
 	], 
 	{
 		moves: (el, container, handle) => {
-    		return handle.classList.contains('fa-arrows-alt');
+    		return handle.classList.contains('fa-arrows-task');
 		}
 });
 
@@ -38,7 +38,7 @@ const dragulaProject = dragula([
 	], 
 	{
 		moves: (el, container, handle) => {
-    		return handle.classList.contains('fa-arrows-alt');
+    		return handle.classList.contains('fa-arrows-section');
 		}
 	}
 );
@@ -66,8 +66,10 @@ let targetSection;
 
 // 若originalSection等於newSection，update陣列裡只要一個object；不等於則需要兩個
 let originSectionId;
+let originSection;
 let originSectionLength;
 let newSectionId;
+let newSection;
 let newSectionLength;
 let taskId;
 let taskOriginOrder;
@@ -90,14 +92,15 @@ for (let i = 0; i < closeForm.length; i ++) {
 // 調整task位置的drag and drop event
 dragulaTasks.on('drag', (el, source) => {
 	taskId = Number(el.id);
-	taskOriginOrder = Number(getIndexInParent(el));
+	taskOriginOrder = Number(el.getAttribute("task-order"));
 	originSectionId = Number(source.parentNode.getAttribute("section-id"));
+	originSection = source.parentNode;
 	originSectionLength = source.childElementCount - 1;
 });
 
-// 單純拖曳、暫不考慮刪除task的情形
 dragulaTasks.on('drop', (el, target, source, sibling) => {
 	newSectionId = Number(target.parentNode.getAttribute("section-id"));
+	newSection = target.parentNode;
 	taskNewOrder = Number(getIndexInParent(el));
 	newSectionLength = Number(target.childElementCount - 1);
 
@@ -107,6 +110,9 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 		section_id: newSectionId
 	};
 
+	el.removeAttribute("task-order");
+	el.setAttribute("task-order", taskNewOrder);
+
 	let update = [];
 	if (originSectionId === newSectionId) {
 		let updateObj = {};
@@ -115,11 +121,23 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 			updateObj.move = 1;
 			updateObj.from = taskNewOrder;
 			updateObj.end = taskOriginOrder - 1;
+
+			for (let i = taskNewOrder + 1; i <= taskOriginOrder ; i++) {
+				let task = originSection.children[1].children[i];
+				task.removeAttribute("task-order");
+				task.setAttribute("task-order", i);
+			}
 		} else {
 			// taskOriginOrder < taskNewOrder
 			updateObj.move = 0
 			updateObj.from = taskOriginOrder + 1;
 			updateObj.end = taskNewOrder;
+
+			for (let i = taskOriginOrder; i <= taskNewOrder ; i++) {
+				let task = originSection.children[1].children[i];
+				task.removeAttribute("task-order");
+				task.setAttribute("task-order", i);
+			}
 		}
 
 		update.push(updateObj);
@@ -137,6 +155,21 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 			from: taskNewOrder,
 			end: newSectionLength
 		};
+
+		for (let i = taskNewOrder + 1; i < newSection.children[1].children.length ; i++) {
+			let task = newSection.children[1].children[i];
+			task.removeAttribute("task-order");
+			task.setAttribute("task-order", i);
+		}
+
+		for (let i = taskOriginOrder; i <= originSection.children[1].children.length ; i++) {
+			let task = originSection.children[1].children[i];
+			if (task) {
+				task.removeAttribute("task-order");
+				task.setAttribute("task-order", i);
+			}
+		}
+
 		update.push(updateObj, updateObj1)
 	};
 	
@@ -146,20 +179,7 @@ dragulaTasks.on('drop', (el, target, source, sibling) => {
 	};
 
 	// 使用者放開卡片才透過ajax與後湍連動
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/update`, {
-		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
-		body: JSON.stringify(data)
-	})
-	.then(res => res.json())
-	.then(result => {
-		console.log(result);
-	})
-	.catch(error => {
-		console.log(error);
-	})
+	updateOrder("task", data)
 });
  
 // 調整section位置的drag and drop event
@@ -194,7 +214,7 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 		update
 	};
 
-	updateSectionOrder(data);
+	updateOrder("section",data);
 });
 
 
@@ -213,26 +233,7 @@ function getProjectInfo() {
 					let currentTask = data[i].tasks[j];
 
 					const newTask = createTaskElement(currentTask.name, currentTask.task_order, currentTask.task_id);
-
-					// const task = document.createElement('div');
-					// task.classList.add('task-block');
-					// task.id = currentTask.task_id;
-
-					// const taskName = document.createElement('p');
-					// taskName.classList.add('name');
-					// taskName.innerText = currentTask.name;
-
-					/*
-					// const taskDescription = document.createElement('p');
-					// taskDescription.classList.add('description');
-					// taskDescription.innerText = currentTask.description;
-
-					// task.append(taskName, taskDescription);
-					*/
-					
-					// task.append(taskName);
-
-					// tContainer.appendChild(task);
+					// const newTask = createTaskElement(currentTask.name, currentTask.task_id);
 					tContainer.appendChild(newTask);
 				}
 			}
@@ -290,27 +291,10 @@ async function addTask (e) {
 	const taskDescriptionValue = description.value.trim();
 	const taskDueDateValue = dueDate.value.trim();
 
-	if (!taskName) {
+	if (!taskNameValue) {
 		swal(`Task name cannot be empty!`);
 		return;
 	}
-
-	// const task = document.createElement('div');
-	// task.classList.add('task-block');
-
-	// const taskName = document.createElement('p');
-	// taskName.classList.add('name');
-	// taskName.innerText = taskNameValue;
-
-	/*
-	// const taskDescription = document.createElement('p');
-	// taskDescription.classList.add('description');
-	// taskDescription.innerText = description.value.trim();
-
-	// task.append(taskName, taskDescription);
-	*/
-	
-	// task.append(taskName);
 
     taskPopUp.style.display = "none";
 
@@ -323,18 +307,18 @@ async function addTask (e) {
 	if (taskDueDateValue) {
 		taskInfo.dueDate = taskDueDateValue;
 	}
+	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
 	for (let i = 0; i < targetTaskContainer.childElementCount; i++) {
-		taskInfo.task_order = targetTaskContainer.childElementCount - 1;
+		taskInfo.task_order = targetTaskContainer.childElementCount;
 	}
 
 	// section_id以section-id的數字(section在db中的id)為準
 	taskInfo.section_id = Number(targetTaskContainer.parentNode.getAttribute("section-id"));
 
-	// task.id = await getTaskId(taskInfo);
 	const taskId = await getTaskId(taskInfo);
 
-	const newTask = createTaskElement(taskName, taskInfo.task_order, taskId);
-	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
+	const newTask = createTaskElement(taskNameValue, taskInfo.task_order, taskId);
+	// const newTask = createTaskElement(taskNameValue, taskId);
 	targetTaskContainer.appendChild(newTask);
 
 	name.value = '';
@@ -450,7 +434,7 @@ function editSectionForm(e) {
 
 // 要建立一個section，必須要有名稱、順序與id
 function createSectionElement(sectionName, sectionOrder, sectionId) {
-	// section中有三個main element，section-header、task-container，與add task btn
+	// sectionContainer中有三個main element，section-header、task-container，與add task btn
 	const sectionContainer = document.createElement('div');
 	sectionContainer.classList.add('section-container');
 	sectionContainer.setAttribute("section-order", sectionOrder);
@@ -464,7 +448,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	sectionHandleBar.classList.add('section-handle-bar');
 
 	const handlerIcon = document.createElement('i');
-	handlerIcon.classList.add("fa", "fa-arrows-alt", "fa-sm");
+	handlerIcon.classList.add("fa", "fa-arrows-alt", "fa-sm", "fa-arrows-section");
 	handlerIcon.setAttribute("aria-hidden", true);
 
 	const dropdownIcon = document.createElement('i');
@@ -517,21 +501,41 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	return tContainer;
 }
 
-// 要建立一個task，必須要有名稱、順序與id
-// 待處理
+// 要建立一個task，必須要有名稱與id
 function createTaskElement(taskName, taskOrder, taskId) {
 	const task = document.createElement('div');
 	task.classList.add('task-block');
 
+	const taskHandleBar = document.createElement('div');
+	taskHandleBar.classList.add('task-handle-bar');
+	const handlerIcon = document.createElement('i');
+	handlerIcon.classList.add("fa", "fa-arrows-alt", "fa-sm", "fa-arrows-task");
+	handlerIcon.setAttribute("aria-hidden", true);	
+	const checkbox = document.createElement('input');
+	checkbox.type = "checkbox";
+	checkbox.classList.add("isComplete");
+	taskHandleBar.append(handlerIcon, checkbox);
+
+	const taskHeader = document.createElement('div');
+	taskHeader.classList.add('task-header');
 	const name = document.createElement('p');
 	name.classList.add('name');
 	name.innerText = taskName;
-	task.append(name);
+	taskHeader.append(name);
 
-	// const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
+	const taskRemove = document.createElement('div');
+	taskRemove.classList.add('task-remove');
+	const removeIcon = document.createElement('i');
+	removeIcon.classList.add("fa", "fa-trash", "fa-lg", "remove-task-icon");
+	removeIcon.addEventListener("click", removeTask);
+	removeIcon.setAttribute("aria-hidden", true);
+	removeIcon.addEventListener("click", removeSection);
+	taskRemove.append(removeIcon);
+
+	task.append(taskHandleBar, taskHeader, taskRemove)
+
 	task.setAttribute("task-order", taskOrder)
 	task.id = taskId
-	// targetTaskContainer.appendChild(task);
 	return task;
 }
 
@@ -587,7 +591,7 @@ function cancelSectionEdit(e) {
 // delete section and alter section order of remaining sections
 function removeSection(e) {
 	const removeBtn = e.target;
-	if (removeBtn.classList.contains("fa-trash")) {
+	if (removeBtn.classList.contains("remove-section-icon")) {
 		const targetSection = removeBtn.parentNode.parentNode.parentNode;
 		const projectContainer = targetSection.parentNode;
 		sectionId = Number(targetSection.getAttribute("section-id"));
@@ -625,7 +629,7 @@ function removeSection(e) {
 					projectContainer.children[i].setAttribute("section-order", i - 1);
 				}
 
-				updateSectionOrder(data);
+				updateOrder("section",data);
 				projectContainer.removeChild(targetSection);
 				swal("Section and tasks deleted!");
 			}
@@ -634,8 +638,8 @@ function removeSection(e) {
 }
 
 // send section order update info to back-end
-function updateSectionOrder(data) {
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/update`, {
+function updateOrder(type, data) {
+	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/${type}/update`, {
 		method: 'POST',
 		headers: {
     		'Content-Type': 'application/json'
@@ -652,4 +656,61 @@ function updateSectionOrder(data) {
 	.catch(error => {
 		console.log(error)
 	})
+}
+
+// delete task and alter task order of remaining tasks
+function removeTask(e) {
+	const removeBtn = e.target;
+	if (removeBtn.classList.contains("remove-task-icon")) {
+		const targetTask = removeBtn.parentNode.parentNode;
+		const taskContainer = targetTask.parentNode;
+		const sectionId = Number(taskContainer.parentNode.getAttribute("section-id"));
+
+		const taskId = Number(targetTask.id);
+		const taskOrder = Number(targetTask.getAttribute("task-order"));
+		const fromTaskOrder = taskOrder + 1;
+		const endTaskOrder = Number(taskContainer.lastElementChild.getAttribute("task-order"));
+
+		const delete_task = {
+			id: taskId,
+			task_order: taskOrder,
+			section_id: sectionId
+		}
+
+		const update = [{
+			move: 0,
+			section_id: sectionId,
+		}];
+
+		if (fromTaskOrder > endTaskOrder) {
+			update[0].from = endTaskOrder;
+			update[0].end = fromTaskOrder;
+		} else {
+			update[0].from = fromTaskOrder;
+			update[0].end = endTaskOrder;
+		}
+
+		const data = {
+			delete_task,
+			update
+		}
+
+		swal({
+			title: `Are you sure you want to delete this task?`,
+			text: `Once deleted, you will not be able to recover.`,
+			buttons: true
+		})
+		.then(result => {
+			if (result) {
+				for (let i = fromTaskOrder; i < taskContainer.children.length; i++ ) {
+					taskContainer.children[i].removeAttribute("task-order")
+					taskContainer.children[i].setAttribute("task-order", i - 1);
+				}
+
+				updateOrder("task", data);
+				taskContainer.removeChild(targetTask);
+				swal("Section and tasks deleted!");
+			}
+		});
+	}
 }

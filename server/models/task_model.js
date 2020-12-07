@@ -1,8 +1,9 @@
+const { result } = require('lodash');
 const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon')
 
 // 新增task前先檢查以防撞車
 const checkNewTaskOrder = async (task) => {
-    const result = await query(`SELECT id, name, description, section_id, task_order FROM task WHERE section_id = ? AND task_order = ?;`, [task.section_id, task.task_order]);
+    const result = await query(`SELECT id, name, section_id, task_order FROM task WHERE section_id = ? AND task_order = ?;`, [task.section_id, task.task_order]);
     return result;
 }
 
@@ -57,11 +58,10 @@ const createTask = async (task) => {
 
 // update task 的任何資訊前都要先確認task id存在
 const checkTask = async (taskId) => {
-    const result = await query(`SELECT id, name, description, section_id, task_order FROM task WHERE id = ?;`, taskId);
+    const result = await query(`SELECT id, name, section_id, task_order FROM task WHERE id = ?;`, taskId);
     return result;
 }
 
-// 這段要改寫...沒有考慮到有兩個block的情形
 const updateTaskOrder = async (data) => {
     const { deleteTask, moveTask, update } = data;
 
@@ -101,7 +101,7 @@ const updateTaskOrder = async (data) => {
 
         let result;
         if (deleteTask) {
-            result = await query(deleteQuery, [deleteTask.task_order, deleteTask.id]);
+            result = await query(deleteQuery, [deleteTask.id, deleteTask.task_order, deleteTask.section_id]);
         }
         if (moveTask) {
             result = await query(moveQuery, [moveTask.task_order, moveTask.section_id, moveTask.id]);
@@ -116,15 +116,43 @@ const updateTaskOrder = async (data) => {
 }
 
 const getTasks = async (sectionIds) => {
-    const result = await query(`SELECT id, name, description, section_id, task_order FROM task WHERE section_id IN (?) ORDER BY task_order;`, [sectionIds]);
+    const result = await query(`SELECT id, name, description, due_date, isComplete, section_id, task_order FROM task WHERE section_id IN (?) ORDER BY task_order;`, [sectionIds]);
     return result;
 }
 
+// task的id另外傳
+// 會修改的頂多這四種
+// {
+//     name
+//     description
+//     due_date
+//     isComplete
+// }
+const editTask = async (taskId, data) => {
+    let query = `UPDATE task SET`;
+    for (const key in data) {
+        query += ` ${key} = ${data[key]},`;
+    }
+    // remove last comma from query
+    let updateQuery = query.slice(0, -1);
+    updateQuery += ` FROM task WHERE id = ?;`;
+
+    try {
+        await startTransaction();
+        const result = await query(updateQuery, taskId);
+        await endWithCommit();
+        return result;
+    } catch (error) {
+        await rollback();
+        return error;
+    }
+}
 
 module.exports = { 
     checkNewTaskOrder,
     createTask,
     checkTask,
     updateTaskOrder,
-    getTasks
+    getTasks,
+    editTask
 };

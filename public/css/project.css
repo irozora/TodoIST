@@ -38,7 +38,7 @@
 
 #profile-div > img {
   width: 150px;
-  height: 180px;
+  height: 200px;
   margin: 0 auto;
   border-radius: 1em;
 }
@@ -161,7 +161,7 @@
 }
 
 .section-header-bar {
-  border-bottom: 1px solid rgb(143, 142, 142);
+  border-bottom: 1px solid rgba(143, 142, 142, 0.6);
 }
 
 .fa-caret-down {
@@ -170,9 +170,10 @@
 }
 
 .fa-arrows-alt {
-  margin-right: 0.5em;
+  margin-right: 0.8em;
   cursor: move;
   transform: rotate(45deg);
+  color: rgb(228, 227, 227);
 }
 
 .section-header, 
@@ -246,7 +247,9 @@
   line-height: 0;
 }
 
-.remove-section-icon {
+.remove-section-icon,
+.remove-task-icon {
+  color: rgb(228, 227, 227);
   cursor: pointer;
 }
 
@@ -263,16 +266,18 @@
 .task-block {
   color: black;
   border-bottom: 1px solid rgba(143, 142, 142, 0.4);
-  margin-top: 10px;
-  cursor: move;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-bottom: 0.5em;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
 }
 
-.task-block .name,
-.task-block .description {
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 8px;
+.task-block .task-header {
+  flex: 1;
 }
+
 
 /* ===== Custom sweet alert box ===== */
 .swal-modal{

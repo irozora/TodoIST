@@ -2,8 +2,8 @@ const _ = require('lodash');
 const Task = require("../models/task_model");
 const Section = require('../models/section_model')
 
-// 單純新增task的功能，需要加上section_id，目前前端沒有拋相關資訊過來
 const createTask = async (req, res) => {
+    console.log(req.body)
     const { body } = req;
     const { name, description, dueDate } = body;
     const task_order = Number(body.task_order);
@@ -150,6 +150,8 @@ const getTasksWithDetail = async (data) => {
             task_id: t.id,
             name: t.name,
             description: t.description,
+            due_date: t.due_date,
+            isComplete: t.isComplete,
             task_order: t.task_order
         }))
 
@@ -157,8 +159,50 @@ const getTasksWithDetail = async (data) => {
     })
 }
 
+// task的id透過params傳遞
+// 會修改的頂多這四種
+// {
+//     name
+//     description
+//     due_date
+//     isComplete
+// }
+const editTask = async (req, res) => {
+    const { body } = req;
+    const { data } = body;
+    const taskId = Number(req.params.id);
+
+    const checkTask = await Task.checkTask(taskId);
+    if (!checkTask.length) {
+        return res.status(400).json({ error: "Requested task id does not exist. Please try another." });
+    }
+
+    const updateTaskInfo = {};
+    if (data.name) {
+        updateTaskInfo.name = data.name;
+    }
+    if (data.description) {
+        updateTaskInfo.description = data.description;
+    }
+    if (data.due_date) {
+        updateTaskInfo.due_date = data.due_date;
+    }
+    if (data.isComplete) {
+        updateTaskInfo.isComplete = Number(data.isComplete);
+    }
+
+    const result = await Task.editTask(taskId, updateTaskInfo);
+
+    if (result.errno) {
+        return res.status(400).json({ error: `Task info update failed. Something wrong occurred.` });
+    }
+
+    return res.status(200).json({ message: "Task info update successfully!" });
+}
+
 module.exports = { 
     createTask,
     updateTaskOrder,
-    getTasks
+    getTasks,
+    editTask
 };
