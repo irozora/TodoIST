@@ -23,7 +23,14 @@ const sectionPopUp = document.getElementById("section-pop-up");
 
 const projectContainer = document.getElementById("project-container");
 const taskContainer = document.getElementsByClassName("task-container");
-const dragulaTasks = dragula([ ...taskContainer ]);
+const dragulaTasks = dragula([ 
+		...taskContainer 
+	], 
+	{
+		moves: (el, container, handle) => {
+    		return handle.classList.contains('fa-arrows-alt');
+		}
+});
 
 // 有fa-arrows-alt這個class的child的parent才能被拖曳
 const dragulaProject = dragula([ 
@@ -41,15 +48,12 @@ const datePicker = new Pikaday({
 	field: datePickerField ,
     format: 'D/M/YYYY',
     toString(date, format) {
-        // you should do formatting based on the passed format,
-        // but we will just return 'D/M/YYYY' for simplicity
         const day = date.getDate();
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
         return `${year}/${month}/${day}`;
     },
     parse(dateString, format) {
-        // dateString is the result of `toString` method
         const parts = dateString.split('/');
         const day = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10) - 1;
@@ -208,20 +212,28 @@ function getProjectInfo() {
 				for (let j = 0; j < data[i].tasks.length; j ++) {
 					let currentTask = data[i].tasks[j];
 
-					const task = document.createElement('div');
-					task.classList.add('task-block');
-					task.id = currentTask.task_id;
+					const newTask = createTaskElement(currentTask.name, currentTask.task_order, currentTask.task_id);
 
-					const taskName = document.createElement('p');
-					taskName.classList.add('name');
-					taskName.innerText = currentTask.name;
+					// const task = document.createElement('div');
+					// task.classList.add('task-block');
+					// task.id = currentTask.task_id;
 
-					const taskDescription = document.createElement('p');
-					taskDescription.classList.add('description');
-					taskDescription.innerText = currentTask.description;
+					// const taskName = document.createElement('p');
+					// taskName.classList.add('name');
+					// taskName.innerText = currentTask.name;
 
-					task.append(taskName, taskDescription);
-					tContainer.appendChild(task);
+					/*
+					// const taskDescription = document.createElement('p');
+					// taskDescription.classList.add('description');
+					// taskDescription.innerText = currentTask.description;
+
+					// task.append(taskName, taskDescription);
+					*/
+					
+					// task.append(taskName);
+
+					// tContainer.appendChild(task);
+					tContainer.appendChild(newTask);
 				}
 			}
 		}
@@ -273,28 +285,44 @@ async function addTask (e) {
 
 	const name = document.getElementById("task-name");
     const description = document.getElementById("task-description");
+	const dueDate = datePickerField;
+	const taskNameValue = name.value.trim();
+	const taskDescriptionValue = description.value.trim();
+	const taskDueDateValue = dueDate.value.trim();
 
-	const task = document.createElement('div');
-	task.classList.add('task-block');
+	if (!taskName) {
+		swal(`Task name cannot be empty!`);
+		return;
+	}
 
-	const taskName = document.createElement('p');
-	taskName.classList.add('name');
-	taskName.innerText = name.value;
+	// const task = document.createElement('div');
+	// task.classList.add('task-block');
 
-	const taskDescription = document.createElement('p');
-	taskDescription.classList.add('description');
-	taskDescription.innerText = description.value;
+	// const taskName = document.createElement('p');
+	// taskName.classList.add('name');
+	// taskName.innerText = taskNameValue;
 
-	task.append(taskName, taskDescription);
+	/*
+	// const taskDescription = document.createElement('p');
+	// taskDescription.classList.add('description');
+	// taskDescription.innerText = description.value.trim();
 
-	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
-	targetTaskContainer.appendChild(task);
+	// task.append(taskName, taskDescription);
+	*/
+	
+	// task.append(taskName);
 
     taskPopUp.style.display = "none";
 
-	const taskInfo = {};
-	taskInfo.name = name.value;
-	taskInfo.description = description.value;
+	const taskInfo = {
+		name: taskNameValue
+	};
+	if (taskDescriptionValue) {
+		taskInfo.description = taskDescriptionValue;
+	}
+	if (taskDueDateValue) {
+		taskInfo.dueDate = taskDueDateValue;
+	}
 	for (let i = 0; i < targetTaskContainer.childElementCount; i++) {
 		taskInfo.task_order = targetTaskContainer.childElementCount - 1;
 	}
@@ -302,10 +330,16 @@ async function addTask (e) {
 	// section_id以section-id的數字(section在db中的id)為準
 	taskInfo.section_id = Number(targetTaskContainer.parentNode.getAttribute("section-id"));
 
-	task.id = await getTaskId(taskInfo);
+	// task.id = await getTaskId(taskInfo);
+	const taskId = await getTaskId(taskInfo);
+
+	const newTask = createTaskElement(taskName, taskInfo.task_order, taskId);
+	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
+	targetTaskContainer.appendChild(newTask);
 
 	name.value = '';
 	description.value = '';
+	dueDate.value = '';
 }
 
 // Get section id after insert into db
@@ -424,7 +458,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 
 	// section-header
 	const sectionHeader = document.createElement('div');
-	sectionHeader.classList.add('section-header');
+	sectionHeader.classList.add('section-header', "section-header-bar");
 
 	const sectionHandleBar = document.createElement('div');
 	sectionHandleBar.classList.add('section-handle-bar');
@@ -486,6 +520,19 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 // 要建立一個task，必須要有名稱、順序與id
 // 待處理
 function createTaskElement(taskName, taskOrder, taskId) {
+	const task = document.createElement('div');
+	task.classList.add('task-block');
+
+	const name = document.createElement('p');
+	name.classList.add('name');
+	name.innerText = taskName;
+	task.append(name);
+
+	// const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
+	task.setAttribute("task-order", taskOrder)
+	task.id = taskId
+	// targetTaskContainer.appendChild(task);
+	return task;
 }
 
 // save section edit

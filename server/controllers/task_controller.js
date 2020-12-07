@@ -5,16 +5,23 @@ const Section = require('../models/section_model')
 // 單純新增task的功能，需要加上section_id，目前前端沒有拋相關資訊過來
 const createTask = async (req, res) => {
     const { body } = req;
-    const { name, description } = body;
+    const { name, description, dueDate } = body;
     const task_order = Number(body.task_order);
     const section_id = Number(body.section_id);
 
     const task = {
         name,
-        description,
         task_order,
         section_id
     };
+
+    if (description) {
+        task.description = description;
+    }
+
+    if (dueDate) {
+        task.due_date = dueDate;
+    }
 
     const newTaskOrder = await Task.checkNewTaskOrder(task);
     if (newTaskOrder.length) {
