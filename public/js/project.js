@@ -14,12 +14,14 @@ const taskBtn = document.getElementsByClassName("task-form-btn");
 const createTask = document.getElementById("create-task-btn");
 const taskBox = document.getElementById("task-box");
 const taskPopUp = document.getElementById("task-pop-up");
-const closeForm = document.getElementsByClassName("close");
+const currentTaskDetailPopUp = document.getElementById("current-task-detail-pop-up");
 
 // 先按group btn來創造section後，才能夠創造task
 const sectionBtn = document.getElementById("section-form-btn");
 const createSection = document.getElementById("create-section-btn");
 const sectionPopUp = document.getElementById("section-pop-up");
+
+const closeForm = document.getElementsByClassName("close");
 
 const projectContainer = document.getElementById("project-container");
 const taskContainer = document.getElementsByClassName("task-container");
@@ -233,7 +235,6 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 	updateOrder("section",data);
 });
 
-
 // task and section rendering
 function getProjectInfo() {
 	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list?id=${projectId}`)
@@ -437,9 +438,10 @@ function showTaskContainer(e) {
 	}
 }
 
-// function to close pop up forms
+// function to close the 3 pop up forms
 function closePopUp(e) {
 	let target = e.target.parentNode.parentNode.parentNode;
+
 	if (target === sectionPopUp) {
 		target.style.display = "none";
 	    let name = document.getElementById("section-name");
@@ -453,6 +455,9 @@ function closePopUp(e) {
 		name.value = "";
 		description.value = "";
 		datepicker.value = "";
+	}
+	if (target.parentNode === currentTaskDetailPopUp) {
+		target.parentNode.style.display = "none";
 	}
 }
 

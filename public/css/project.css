@@ -88,7 +88,9 @@
 }
 
 
-/*===== pop up for adding section =====*/
+/*===== pop up for adding section and/or task =====*/
+
+#current-task-detail-pop-up,
 #section-pop-up,
 #task-pop-up {
   display: none;
@@ -105,15 +107,72 @@
   background-color: rgba(0,0,0,0.4); 
 }
 
+/* 測試用，後面要刪掉 */
+#current-task-detail-pop-up {
+  display: block;
+}
+
 #section-box,
-#task-box {
-  /* background-color: rgb(40, 40, 40); */
+#task-box,
+#current-task-detail {
   color: rgb(228, 227, 227);
-    background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114));
-  margin: 30vh auto; 
+  background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114));
+  margin: 25vh auto; 
   padding: 20px;
   border: 1px solid white;
   width: 40%; 
+  border-radius: 1em;
+}
+
+/*===== pop up for task detail =====*/
+
+#current-task-detail {
+  width: 50%; 
+  background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 114, 140));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#current-task-detail > * {
+  width: 90%;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+#current-task-header,
+#current-name-isComplete {
+  display: flex;
+  flex-direction: row;
+}
+
+#current-task-header {
+  justify-content: space-between;
+}
+
+.task-isComplete {
+  margin: 0;
+}
+
+#current-task-completion {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#current-task-name {
+  margin-left: 0.5em;
+}
+
+#current-task-name > span {
+  font-size: 1.2em;
+}
+
+#current-task-description {
+  align-self: center;
+  background-color: rgba(0,0,0,0.4);
+  padding: 1em;
   border-radius: 1em;
 }
 

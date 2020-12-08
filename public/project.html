@@ -92,6 +92,52 @@
 			</form>
 		</div>
 
+		<!-- Popup Form to show task detail -->
+		<div id="current-task-detail-pop-up">
+			<div id="current-task-detail">
+				<div id="current-task-header">
+					<!-- 這個div只放task所屬的project名稱 (也可能改放所屬section名稱) -->
+					<div id="task-belong-project-name" class="current-project-name">
+						<h4>lalalallalallalla</h4>
+					</div>
+					<div>
+						<span class="close">x</span>
+					</div>
+				</div>
+
+				<!-- 這個div放isComplete checkbox與task名稱 -->
+				<div id="current-name-isComplete">
+					<!-- isComplete checkbox -->
+					<div id="current-task-completion">
+						<input type="checkbox" class="isComplete task-isComplete" />
+					</div>
+
+					<!-- task名稱 -->
+					<div id="current-task-name">
+						<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
+						<span>到時候這邊會顯示task名稱</span>
+					</div>
+				</div>
+
+				<!-- 這個div放due date -->
+				<div id="current-due-date">
+					<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
+					<!-- 有的話放字串，沒有的話就寫no due date -->
+					Due Date: <span>2020/12/26</span>
+					<!-- <input type="text" placeholder="Add due date..." id="current-datepicker" name="date-picker"/> -->
+				</div>
+
+				<div id="current-task-description">
+					<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
+					<span>這邊是隨便亂打的task敘述，原則上字數應該是會限制在150字以內...吧?現在後面這邊是gibberish啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦</span>
+				</div>
+
+				<!-- 預留給comment與upload -->
+				<div id="current-task-comment-upload">
+				</div>
+			</div>
+		</div>
+
 		<div id="project-container">
 		</div>
 	</div>
