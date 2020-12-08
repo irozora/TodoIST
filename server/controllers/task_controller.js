@@ -3,7 +3,6 @@ const Task = require("../models/task_model");
 const Section = require('../models/section_model')
 
 const createTask = async (req, res) => {
-    console.log(req.body)
     const { body } = req;
     const { name, description, dueDate } = body;
     const task_order = Number(body.task_order);

@@ -190,11 +190,15 @@ dragulaProject.on('drag', (el, source) => {
 
 dragulaProject.on('drop', (el, target, source, sibling) => {
 	sectionNewOrder = Number(getIndexInParent(el));
-	
+	const pContainer = el.parentNode;
 	let move_section = {
 		id: sectionId,
 		section_order: sectionNewOrder
 	};
+
+	el.removeAttribute("section-order");
+	el.setAttribute("section-order", sectionNewOrder);
+
 	let update = {
 		project_id: projectId
 	};
@@ -202,11 +206,23 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 		update.move = 1;
 		update.from = sectionNewOrder;
 		update.end = sectionOriginOrder - 1;
+
+		for (let i = sectionNewOrder + 1; i <= sectionOriginOrder ; i++) {
+			let section = pContainer.children[i];
+			section.removeAttribute("section-order");
+			section.setAttribute("section-order", i);
+		}
 	};
 	if (sectionOriginOrder < sectionNewOrder) {
 		update.move = 0;
 		update.from = sectionOriginOrder + 1;
 		update.end = sectionNewOrder;
+
+		for (let i = sectionOriginOrder; i <= sectionNewOrder ; i++) {
+			let section = pContainer.children[i];
+			section.removeAttribute("section-order");
+			section.setAttribute("section-order", i);
+		}
 	};
 
 	let data = {
@@ -262,7 +278,7 @@ async function addSection(e) {
 	}
 
 	let section_order;
-	for (let i = 0; i < projectContainer.childElementCount; i++) {
+	for (let i = 0; i <= projectContainer.childElementCount; i++) {
 		section_order = projectContainer.childElementCount;
 	}
 
@@ -308,7 +324,7 @@ async function addTask (e) {
 		taskInfo.dueDate = taskDueDateValue;
 	}
 	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
-	for (let i = 0; i < targetTaskContainer.childElementCount; i++) {
+	for (let i = 0; i <= targetTaskContainer.childElementCount; i++) {
 		taskInfo.task_order = targetTaskContainer.childElementCount;
 	}
 
@@ -683,11 +699,15 @@ function removeTask(e) {
 		}];
 
 		if (fromTaskOrder > endTaskOrder) {
-			update[0].from = endTaskOrder;
-			update[0].end = fromTaskOrder;
+			if (!endTaskOrder) {
+				update[0].from = endTaskOrder + 1;
+				update[0].end = fromTaskOrder;
+			}
 		} else {
-			update[0].from = fromTaskOrder;
-			update[0].end = endTaskOrder;
+			if (!fromTaskOrder) {
+				update[0].from = fromTaskOrder + 1;
+				update[0].end = endTaskOrder;
+			}
 		}
 
 		const data = {
