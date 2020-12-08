@@ -248,8 +248,8 @@ function getProjectInfo() {
 				for (let j = 0; j < data[i].tasks.length; j ++) {
 					let currentTask = data[i].tasks[j];
 
-					const newTask = createTaskElement(currentTask.name, currentTask.task_order, currentTask.task_id);
-					// const newTask = createTaskElement(currentTask.name, currentTask.task_id);
+					const newTask = createTaskElement(currentTask.name, currentTask.task_order, currentTask.task_id, currentTask.isComplete);
+
 					tContainer.appendChild(newTask);
 				}
 			}
@@ -270,7 +270,9 @@ async function addSection(e) {
 	e.preventDefault();
 
     let name = document.getElementById("section-name");
-	sectionName = name.value;
+	let sectionName = name.value;
+
+	name.value = '';
 
 	if (!sectionName.trim()) {
 		swal(`Section name is required!`);
@@ -293,7 +295,6 @@ async function addSection(e) {
 	createSectionElement(sectionName, section_order, sectionId);
 
 	sectionPopUp.style.display = "none";
-	name.value = '';
 }
 
 // async function use to create task
@@ -306,6 +307,10 @@ async function addTask (e) {
 	const taskNameValue = name.value.trim();
 	const taskDescriptionValue = description.value.trim();
 	const taskDueDateValue = dueDate.value.trim();
+
+	name.value = '';
+	description.value = '';
+	dueDate.value = '';
 
 	if (!taskNameValue) {
 		swal(`Task name cannot be empty!`);
@@ -320,34 +325,35 @@ async function addTask (e) {
 	if (taskDescriptionValue) {
 		taskInfo.description = taskDescriptionValue;
 	}
+
 	if (taskDueDateValue) {
 		let timeArr = taskDueDateValue.split('/');
 		const year = parseInt(timeArr[0]);
 		const month = parseInt(timeArr[1]);
 		const date = parseInt(timeArr[2]);
-		
+		let message;
 		if (!year || !month || !date) {
-			swal(`Year date format incorrect.`);
-			return;
+			message = `Year date format incorrect.`;
 		}
 
 		if (month > 12 || month < 1) {
-			swal(`Month date format incorrect.`);
-			return;
+			message = `Month date format incorrect.`;
 		}
 
 		if ((month === 2 && date > 29) || date < 1 || date > 31) {
-			swal(`Date format incorrect.`);
+			message = `Date date format incorrect.`;
+		}
+
+		if (message) {
+			swal(message);
 			return;
 		}
-		// for (let i = 0; i < timeArr.length; i++) {
-		// 	if (!parseInt(timeArr[i])) {
-		// 		swal(`Due date format incorrect.`);
-		// 		return;
-		// 	}
-		// }
+	}
+
+	if (taskDueDateValue) {
 		taskInfo.dueDate = taskDueDateValue;
 	}
+
 	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
 	for (let i = 0; i <= targetTaskContainer.childElementCount; i++) {
 		taskInfo.task_order = targetTaskContainer.childElementCount;
@@ -357,14 +363,10 @@ async function addTask (e) {
 	taskInfo.section_id = Number(targetTaskContainer.parentNode.getAttribute("section-id"));
 
 	const taskId = await getTaskId(taskInfo);
+	let newTaskCompletion = 0; // 0 means incomplete
+	const newTask = createTaskElement(taskNameValue, taskInfo.task_order, taskId, newTaskCompletion);
 
-	const newTask = createTaskElement(taskNameValue, taskInfo.task_order, taskId);
-	// const newTask = createTaskElement(taskNameValue, taskId);
 	targetTaskContainer.appendChild(newTask);
-
-	name.value = '';
-	description.value = '';
-	dueDate.value = '';
 }
 
 // Get section id after insert into db
@@ -438,8 +440,19 @@ function showTaskContainer(e) {
 // function to close pop up forms
 function closePopUp(e) {
 	let target = e.target.parentNode.parentNode.parentNode;
-	if (target === sectionPopUp || target === taskPopUp) {
+	if (target === sectionPopUp) {
 		target.style.display = "none";
+	    let name = document.getElementById("section-name");
+		name.value = "";
+	}
+	if (target === taskPopUp) {
+		target.style.display = "none";
+		let name = document.getElementById("task-name");
+	    let description = document.getElementById("task-description");
+	    let datepicker = document.getElementById("datepicker");
+		name.value = "";
+		description.value = "";
+		datepicker.value = "";
 	}
 }
 
@@ -543,7 +556,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 }
 
 // 要建立一個task，必須要有名稱與id
-function createTaskElement(taskName, taskOrder, taskId) {
+function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 	const task = document.createElement('div');
 	task.classList.add('task-block');
 
@@ -555,6 +568,9 @@ function createTaskElement(taskName, taskOrder, taskId) {
 	const checkbox = document.createElement('input');
 	checkbox.type = "checkbox";
 	checkbox.classList.add("isComplete");
+	if (isComplete) {
+		checkbox.checked = "true";
+	}
 	taskHandleBar.append(handlerIcon, checkbox);
 
 	const taskHeader = document.createElement('div');

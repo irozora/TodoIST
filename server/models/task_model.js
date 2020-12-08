@@ -120,6 +120,11 @@ const getTasks = async (sectionIds) => {
     return result;
 }
 
+const getTask = async (taskId) => {
+    const result = await query(`SELECT name, description, due_date, isComplete FROM task WHERE id=?;`, taskId);
+    return result;
+}
+
 // task的id另外傳
 // 會修改的頂多這四種
 // {
@@ -154,5 +159,6 @@ module.exports = {
     checkTask,
     updateTaskOrder,
     getTasks,
+    getTask,
     editTask
 };

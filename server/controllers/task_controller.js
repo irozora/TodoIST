@@ -158,6 +158,25 @@ const getTasksWithDetail = async (data) => {
     })
 }
 
+
+const getTask = async (req, res) => {
+    const taskId = Number(req.params.id);
+
+    const checkTask = await Task.checkTask(taskId);
+    if (!checkTask.length) {
+        return res.status(400).json({ error: "Requested task id does not exist. Please try another." });
+    }
+
+    const data = await Task.getTask(taskId);
+
+    if (!data.errno) {
+        return res.status(400).json({ error: `Something wrong occurred during data retrieve.` });
+    }
+
+    return res.status(200).send({ data });
+
+}
+
 // task的id透過params傳遞
 // 會修改的頂多這四種
 // {
@@ -203,5 +222,6 @@ module.exports = {
     createTask,
     updateTaskOrder,
     getTasks,
+    getTask,
     editTask
 };
