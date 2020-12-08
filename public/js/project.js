@@ -321,6 +321,31 @@ async function addTask (e) {
 		taskInfo.description = taskDescriptionValue;
 	}
 	if (taskDueDateValue) {
+		let timeArr = taskDueDateValue.split('/');
+		const year = parseInt(timeArr[0]);
+		const month = parseInt(timeArr[1]);
+		const date = parseInt(timeArr[2]);
+		
+		if (!year || !month || !date) {
+			swal(`Year date format incorrect.`);
+			return;
+		}
+
+		if (month > 12 || month < 1) {
+			swal(`Month date format incorrect.`);
+			return;
+		}
+
+		if ((month === 2 && date > 29) || date < 1 || date > 31) {
+			swal(`Date format incorrect.`);
+			return;
+		}
+		// for (let i = 0; i < timeArr.length; i++) {
+		// 	if (!parseInt(timeArr[i])) {
+		// 		swal(`Due date format incorrect.`);
+		// 		return;
+		// 	}
+		// }
 		taskInfo.dueDate = taskDueDateValue;
 	}
 	const targetTaskContainer = targetSection.firstElementChild.nextElementSibling;
@@ -699,15 +724,11 @@ function removeTask(e) {
 		}];
 
 		if (fromTaskOrder > endTaskOrder) {
-			if (!endTaskOrder) {
-				update[0].from = endTaskOrder + 1;
-				update[0].end = fromTaskOrder;
-			}
+			update[0].from = endTaskOrder + 1;
+			update[0].end = fromTaskOrder;
 		} else {
-			if (!fromTaskOrder) {
-				update[0].from = fromTaskOrder + 1;
-				update[0].end = endTaskOrder;
-			}
+			update[0].from = fromTaskOrder + 1;
+			update[0].end = endTaskOrder;
 		}
 
 		const data = {
