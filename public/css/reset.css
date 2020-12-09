@@ -49,7 +49,7 @@ input {
   padding: .375rem .75rem;
   margin-bottom: 0.5em;
   margin-right: 1em;
-  background-color: rgb(54, 54, 54);
+  background-color: rgba(0,0,0,0.4);
   border: none
 }
 

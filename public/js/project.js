@@ -280,6 +280,11 @@ async function addSection(e) {
 		return;
 	}
 
+	if (sectionName.trim().length > 15) {
+		swal(`Section name should be less than 15 characters.`);
+		return;
+	}
+
 	let section_order;
 	for (let i = 0; i <= projectContainer.childElementCount; i++) {
 		section_order = projectContainer.childElementCount;
@@ -318,11 +323,22 @@ async function addTask (e) {
 		return;
 	}
 
+	if (taskNameValue.length > 15) {
+		swal(`Task name should be less than 15 characters.`);
+		return;
+	}
+
     taskPopUp.style.display = "none";
 
 	const taskInfo = {
 		name: taskNameValue
 	};
+
+	if (taskDescriptionValue.length > 150) {
+		swal(`Task description should remain less than 150 characters.`);
+		return;
+	}
+
 	if (taskDescriptionValue) {
 		taskInfo.description = taskDescriptionValue;
 	}
@@ -580,9 +596,13 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 
 	const taskHeader = document.createElement('div');
 	taskHeader.classList.add('task-header');
+	taskHeader.setAttribute("task-id", taskId);
 	const name = document.createElement('p');
 	name.classList.add('name');
+	name.setAttribute("task-id", taskId);
 	name.innerText = taskName;
+
+	taskHeader.addEventListener("click", showTaskDetailForm);
 	taskHeader.append(name);
 
 	const taskRemove = document.createElement('div');
@@ -774,5 +794,15 @@ function removeTask(e) {
 				swal("Section and tasks deleted!");
 			}
 		});
+	}
+}
+
+function showTaskDetailForm(e) {
+	console.log(e.target);
+	const target = e.target;
+	const targetTaskId = Number(target.getAttribute("task-id"));
+	if (targetTaskId) {
+		console.log(targetTaskId);
+		currentTaskDetailPopUp.style.display = "block";
 	}
 }
