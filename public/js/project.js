@@ -25,6 +25,9 @@ const closeForm = document.getElementsByClassName("close");
 
 const projectContainer = document.getElementById("project-container");
 const taskContainer = document.getElementsByClassName("task-container");
+
+const datePickerField = document.getElementById('datepicker');
+
 const dragulaTasks = dragula([ 
 		...taskContainer 
 	], 
@@ -44,25 +47,6 @@ const dragulaProject = dragula([
 		}
 	}
 );
-
-const datePickerField = document.getElementById('datepicker');
-const datePicker = new Pikaday({ 
-	field: datePickerField ,
-    format: 'D/M/YYYY',
-    toString(date, format) {
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        return `${year}/${month}/${day}`;
-    },
-    parse(dateString, format) {
-        const parts = dateString.split('/');
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        return new Date(year, month, day);
-    }
-});
 
 let targetSection;
 
@@ -237,7 +221,7 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 
 // task and section rendering
 function getProjectInfo() {
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/list?id=${projectId}`)
+	fetch(`/api/1.0/task/list?id=${projectId}`)
 	.then(res => res.json())
 	.then(result => {
 		const { data } =  result;
@@ -264,6 +248,72 @@ function getProjectInfo() {
 // acquire element location
 function getIndexInParent (el) {
   return Array.from(el.parentNode.children).indexOf(el)
+}
+
+// function to check or uncheck task completion checkbox
+function checkingTask (isComplete, taskCheckbox, taskNameSpan) {
+	switch (isComplete) {
+		case 1: 
+			console.log(taskCheckbox)
+			taskCheckbox.checked = true;
+			taskNameSpan.classList.add('cross-out');
+			break;
+		case 0: 
+			taskCheckbox.checked = false;
+			taskNameSpan.classList.remove('cross-out');
+			break;
+	}
+}
+
+// function to close the 3 pop up forms
+function closePopUp(e) {
+	let target = e.target.parentNode.parentNode.parentNode;
+
+	if (target === sectionPopUp) {
+		target.style.display = "none";
+	    let name = document.getElementById("section-name");
+		name.value = "";
+	}
+	if (target === taskPopUp) {
+		target.style.display = "none";
+		let name = document.getElementById("task-name");
+	    let description = document.getElementById("task-description");
+	    let datepicker = document.getElementById("datepicker");
+		name.value = "";
+		description.value = "";
+		datepicker.value = "";
+	}
+	if (target.parentNode === currentTaskDetailPopUp) {
+		target.parentNode.style.display = "none";
+		
+		// 使用者按了編輯task name後沒有save也沒有cancel就把視窗關掉的情形
+		const nameSpan = document.getElementsByClassName('current-task-name')[0]
+		const nameTitle = nameSpan.parentNode;
+		const nameForm = nameSpan.nextElementSibling;
+		if (nameSpan.style.display === 'none' ) {
+			nameTitle.removeChild(nameForm)
+			nameSpan.style.display = 'block';
+		}
+
+		// 使用者按了編輯schedule後沒有save也沒有cancel就把視窗關掉的情形
+		const dateSpan = document.getElementsByClassName('current-due-date')[0]
+		const dateTitle = dateSpan.parentNode;
+		const dateForm = dateSpan.nextElementSibling;
+		if (dateSpan.style.display === 'none' ) {
+			dateTitle.removeChild(dateForm)
+			dateSpan.style.display = 'block';
+		}
+
+		// 使用者按了編輯description後沒有save也沒有cancel就把視窗關掉的情形
+		const descriptionSpan = document.getElementsByClassName('current-task-description')[0]
+		const descriptionTitle = descriptionSpan.parentNode;
+		const descriptionForm = descriptionSpan.nextElementSibling;
+		if (descriptionSpan.style.display === 'none' ) {
+			descriptionTitle.removeChild(descriptionForm)
+			descriptionSpan.style.display = 'block';
+		}
+
+	}
 }
 
 // async function use to create section
@@ -296,7 +346,8 @@ async function addSection(e) {
 		project_id: projectId
 	}
 
-	const sectionId = await getSectionId(sectionInfo);
+	// const sectionId = await getSectionId(sectionInfo);
+	const sectionId = await getInsertedDataId('section', sectionInfo);
 
 	createSectionElement(sectionName, section_order, sectionId);
 
@@ -344,30 +395,6 @@ async function addTask (e) {
 	}
 
 	if (taskDueDateValue) {
-		let timeArr = taskDueDateValue.split('/');
-		const year = parseInt(timeArr[0]);
-		const month = parseInt(timeArr[1]);
-		const date = parseInt(timeArr[2]);
-		let message;
-		if (!year || !month || !date) {
-			message = `Year date format incorrect.`;
-		}
-
-		if (month > 12 || month < 1) {
-			message = `Month date format incorrect.`;
-		}
-
-		if ((month === 2 && date > 29) || date < 1 || date > 31) {
-			message = `Date date format incorrect.`;
-		}
-
-		if (message) {
-			swal(message);
-			return;
-		}
-	}
-
-	if (taskDueDateValue) {
 		taskInfo.dueDate = taskDueDateValue;
 	}
 
@@ -379,21 +406,22 @@ async function addTask (e) {
 	// section_id以section-id的數字(section在db中的id)為準
 	taskInfo.section_id = Number(targetTaskContainer.parentNode.getAttribute("section-id"));
 
-	const taskId = await getTaskId(taskInfo);
+	const taskId = await getInsertedDataId('task', taskInfo);
+
 	let newTaskCompletion = 0; // 0 means incomplete
 	const newTask = createTaskElement(taskNameValue, taskInfo.task_order, taskId, newTaskCompletion);
 
 	targetTaskContainer.appendChild(newTask);
 }
 
-// Get section id after insert into db
-function getSectionId (sectionInfo) {
-	let id = fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/create`, {
+// get id for section or task after insert into db
+function getInsertedDataId (type, data) {
+	let id = fetch(`/api/1.0/${type}/create`, {
 		method: 'POST',
 		headers: {
     		'Content-Type': 'application/json'
 	    },
-		body: JSON.stringify(sectionInfo)
+		body: JSON.stringify(data)
 	})
 	.then(res => res.json())
 	.then(result => {
@@ -406,24 +434,9 @@ function getSectionId (sectionInfo) {
 	return id;
 }
 
-// Get task id after insert into db
-function getTaskId (taskInfo) {
-	let id = fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/task/create`, {
-		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
-		body: JSON.stringify(taskInfo)
-	})
-	.then(res => res.json())
-	.then(result => {
-		return result.insertId;
-	})
-	.catch(error => {
-		console.log(error)
-	})
-
-	return id;
+// function to show section form
+function showSectionForm() {
+	sectionPopUp.style.display = "block";
 }
 
 // function add on block buttons to show task form
@@ -432,11 +445,6 @@ function showTaskForm(e) {
 		taskPopUp.style.display = "block";
 		targetSection = e.target.parentNode;
 	}
-}
-
-// function to show section form
-function showSectionForm() {
-	sectionPopUp.style.display = "block";
 }
 
 // show all tasks
@@ -454,38 +462,15 @@ function showTaskContainer(e) {
 	}
 }
 
-// function to close the 3 pop up forms
-function closePopUp(e) {
-	let target = e.target.parentNode.parentNode.parentNode;
-
-	if (target === sectionPopUp) {
-		target.style.display = "none";
-	    let name = document.getElementById("section-name");
-		name.value = "";
-	}
-	if (target === taskPopUp) {
-		target.style.display = "none";
-		let name = document.getElementById("task-name");
-	    let description = document.getElementById("task-description");
-	    let datepicker = document.getElementById("datepicker");
-		name.value = "";
-		description.value = "";
-		datepicker.value = "";
-	}
-	if (target.parentNode === currentTaskDetailPopUp) {
-		target.parentNode.style.display = "none";
-	}
-}
-
 // function to replace section title span with form(with input and buttons)
-function editSectionForm(e) {
+function showEditSectionForm(e) {
 	const sectionSpan = e.target;
 	if (sectionSpan.classList.contains('section-name')) {
 		let name = sectionSpan.innerHTML;
-		console.log(name);
 		sectionSpan.style.display = 'none';
 		
 		const form = document.createElement('form');
+		form.classList.add("section-title-form");
 		const input = document.createElement('input');
 		input.classList.add("rename-section-input")
 		input.type = "text";
@@ -540,7 +525,7 @@ function createSectionElement(sectionName, sectionOrder, sectionId) {
 	const sectionTitleSpan = document.createElement('span');
 	sectionTitleSpan.classList.add('section-name');
 	sectionTitleSpan.setAttribute("section-id", sectionId);
-	sectionTitleSpan.addEventListener('click', editSectionForm);
+	sectionTitleSpan.addEventListener('click', showEditSectionForm);
 	sectionTitleSpan.innerHTML = sectionName;
 
 	sectionTitle.append(sectionTitleSpan);
@@ -585,14 +570,21 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 	taskHandleBar.classList.add('task-handle-bar');
 	const handlerIcon = document.createElement('i');
 	handlerIcon.classList.add("fa", "fa-arrows-alt", "fa-sm", "fa-arrows-task");
-	handlerIcon.setAttribute("aria-hidden", true);	
+	handlerIcon.setAttribute("aria-hidden", true);
+
+	const checkboxLabel = document.createElement('label');
+	checkboxLabel.classList.add('checkbox-label');
 	const checkbox = document.createElement('input');
 	checkbox.type = "checkbox";
+
+	const customCheckBox = document.createElement('span');
+	customCheckBox.classList.add('checkMark');
+
+	checkboxLabel.append(checkbox, customCheckBox)
+
 	checkbox.classList.add("isComplete");
-	if (isComplete) {
-		checkbox.checked = "true";
-	}
-	taskHandleBar.append(handlerIcon, checkbox);
+	// taskHandleBar.append(handlerIcon, checkbox);
+	taskHandleBar.append(handlerIcon, checkboxLabel);
 
 	const taskHeader = document.createElement('div');
 	taskHeader.classList.add('task-header');
@@ -601,6 +593,8 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 	name.classList.add('name');
 	name.setAttribute("task-id", taskId);
 	name.innerText = taskName;
+
+	checkingTask(isComplete, checkbox, name);
 
 	taskHeader.addEventListener("click", showTaskDetailForm);
 	taskHeader.append(name);
@@ -619,6 +613,24 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 	task.setAttribute("task-order", taskOrder)
 	task.id = taskId
 	return task;
+}
+
+// edit data section or task table using id
+function editDataById (type, id, data) {
+	fetch(`/api/1.0/${type}/${id}`, {
+		method: 'POST',
+		headers: {
+    		'Content-Type': 'application/json'
+	    },
+		body: JSON.stringify(data)
+	})
+	.then(res => res.json())
+	.then(result => {
+		console.log(result);
+	})
+	.catch(error => {
+		console.log(error)
+	})
 }
 
 // save section edit
@@ -644,20 +656,22 @@ function saveSectionEdit(e) {
 		name: inputValue
 	};
 
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/section/${sectionId}`, {
-		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
-		body: JSON.stringify(data)
-	})
-	.then(res => res.json())
-	.then(result => {
-		console.log(result);
-	})
-	.catch(error => {
-		console.log(error)
-	})
+	editDataById('section', sectionId, data);
+
+	// fetch(`/api/1.0/section/${sectionId}`, {
+	// 	method: 'POST',
+	// 	headers: {
+    // 		'Content-Type': 'application/json'
+	//     },
+	// 	body: JSON.stringify(data)
+	// })
+	// .then(res => res.json())
+	// .then(result => {
+	// 	console.log(result);
+	// })
+	// .catch(error => {
+	// 	console.log(error)
+	// })
 }
 
 // cancel section edit
@@ -665,7 +679,7 @@ function cancelSectionEdit(e) {
 	e.preventDefault();
 	const form = e.target.parentNode;
 	const sectionTitle = e.target.parentNode.parentNode;
-	const titleSpan = e.target.parentNode.previousSibling;
+	const titleSpan = e.target.parentNode.previousElementSibling;
 	titleSpan.style.display = "block";
 	sectionTitle.removeChild(form);
 }
@@ -717,27 +731,6 @@ function removeSection(e) {
 			}
 		});
 	}
-}
-
-// send section order update info to back-end
-function updateOrder(type, data) {
-	fetch(`${window.location.protocol}//${window.location.hostname}:3000/api/1.0/${type}/update`, {
-		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
-		body: JSON.stringify(data)
-	})
-	.then(res => {
-		console.log(res.status)
-		return res.json();
-	})
-	.then(result => {
-		console.log(result);
-	})
-	.catch(error => {
-		console.log(error)
-	})
 }
 
 // delete task and alter task order of remaining tasks
@@ -797,12 +790,303 @@ function removeTask(e) {
 	}
 }
 
-function showTaskDetailForm(e) {
-	console.log(e.target);
+// send section order update info to back-end
+function updateOrder(type, data) {
+	fetch(`/api/1.0/${type}/update`, {
+		method: 'POST',
+		headers: {
+    		'Content-Type': 'application/json'
+	    },
+		body: JSON.stringify(data)
+	})
+	.then(res => {
+		console.log(res.status)
+		return res.json();
+	})
+	.then(result => {
+		console.log(result);
+	})
+	.catch(error => {
+		console.log(error)
+	})
+}
+
+// async event listener to show task detail
+async function showTaskDetailForm(e) {
 	const target = e.target;
 	const targetTaskId = Number(target.getAttribute("task-id"));
 	if (targetTaskId) {
-		console.log(targetTaskId);
 		currentTaskDetailPopUp.style.display = "block";
+		const taskDetail = await getSingleTaskDetail(targetTaskId);
+		const { name, description, due_date, isComplete } = taskDetail;
+
+		const taskNameSpan = document.getElementsByClassName('current-task-name')[0];
+		taskNameSpan.setAttribute('current-task-id', targetTaskId);
+		taskNameSpan.addEventListener('click', showEditTaskNameForm);
+		taskNameSpan.innerHTML = name;
+
+		const taskIsComplete = document.getElementsByClassName('task-isComplete')[0];
+		taskIsComplete.setAttribute('current-task-id', targetTaskId);
+		
+		checkingTask(isComplete, taskIsComplete, taskNameSpan);
+		
+		const taskDueDateSpan = document.getElementsByClassName('current-due-date')[0];
+		taskDueDateSpan.setAttribute('current-task-id', targetTaskId);
+		if (due_date) {
+			taskDueDateSpan.innerHTML = due_date;
+		} else {
+			taskDueDateSpan.innerHTML = `Click to reschedule`;
+		}
+		taskDueDateSpan.addEventListener('click', showEditDueDateForm);
+
+		const taskDescriptionSpan = document.getElementsByClassName('current-task-description')[0];
+		taskDescriptionSpan.setAttribute('current-task-id', targetTaskId)
+		if (description) {
+			taskDescriptionSpan.innerHTML = description;
+		} else {
+			taskDescriptionSpan.innerHTML = `Click to add description to task...`;
+		}
+		taskDescriptionSpan.addEventListener('click', showEditDescriptionForm);
 	}
 }
+
+// retrieve single task detail from db.
+function getSingleTaskDetail(taskId) {
+	const id = Number(taskId);
+	let taskDetail = fetch(`/api/1.0/task/${id}`)
+		.then(res =>  res.json())
+		.then(result => result.data[0])
+		.catch(error => {
+			console.log(error)
+		})
+
+	return taskDetail;
+}
+
+/*
+ Below are functions for editing task detail(name ,description, due_date, isComplete)
+*/
+
+// editing task name
+// function to replace task title span with form(with input and buttons) 
+function showEditTaskNameForm(e) {
+	const currentTaskSpan = e.target;
+	const currentTaskName = e.target.innerHTML
+	currentTaskSpan.style.display = "none";
+	const form = document.createElement('form');
+	form.classList.add("task-title-form");
+	const input = document.createElement('input');
+	input.classList.add("rename-task-input")
+	input.type = "text";
+	input.value = currentTaskName;
+	const saveBtn = document.createElement('button');
+	saveBtn.classList.add("rename-task-btn", "btn");
+	saveBtn.type = "submit";
+	saveBtn.innerHTML = "Save";
+	saveBtn.addEventListener("click", saveTaskEdit);
+
+	const cancelBtn = document.createElement('button');
+	cancelBtn.classList.add("cancel-task-rename-btn", "btn");
+	cancelBtn.type = "submit";
+	cancelBtn.innerHTML = "Cancel";
+	cancelBtn.addEventListener("click", cancelTaskEdit);
+
+	form.append(input, saveBtn, cancelBtn);
+
+	currentTaskSpan.parentNode.append(form)
+}
+
+// save task name after edit(task detail跟大綱部分名稱都要改動)
+function saveTaskEdit(e) {
+	e.preventDefault();
+	// 位置與sectionTitle一樣
+	const taskTitle = e.target.parentNode.parentNode;
+	// same
+	const form = e.target.parentNode;
+	// same
+	const inputBox = e.target.previousSibling;	
+	let inputValue = inputBox.value;
+	inputValue = inputValue.trim();
+	// 位置不太一樣，將previousSibling改為
+	const titleSpan = e.target.parentNode.previousElementSibling;
+
+	const taskId = Number(titleSpan.getAttribute("current-task-id"));
+
+	if (!inputValue) {
+		swal(`Task name cannot be empty!`);
+		return;
+	}
+
+	// 對應要改
+	taskTitle.removeChild(form);
+	titleSpan.innerHTML = inputValue;
+	titleSpan.style.display = "block";
+	const data = {
+		name: inputValue
+	};
+
+	editDataById('task', taskId, data);
+	const taskNameInSectionContainer = document.querySelectorAll(`[task-id="${taskId}"]`)[1];
+	taskNameInSectionContainer.innerHTML = inputValue;
+}
+
+// cancel editing task name
+function cancelTaskEdit(e) {
+	e.preventDefault();
+	const form = e.target.parentNode;
+	const taskTitle = e.target.parentNode.parentNode;
+	const titleSpan = e.target.parentNode.previousElementSibling;
+	titleSpan.style.display = "block";
+	taskTitle.removeChild(form);
+}
+
+// editing task schedule
+// function to replace task title span with form(with input and buttons) 
+function showEditDueDateForm(e) {
+	const currentDateSpan = e.target;
+	const currentDateDiv = currentDateSpan.parentNode;
+	const currentDateValue = currentDateSpan.innerHTML;
+	currentDateSpan.style.display = 'none';
+
+	const form = document.createElement('form');
+	form.classList.add("task-date-form");
+	const input = document.createElement('input');
+	input.classList.add("reschedule-task-input")
+	input.type = "date";
+
+	if (currentDateValue === 'Click to reschedule') {
+		input.value = '';		
+	} else {
+		input.value = currentDateValue;		
+	}
+
+	const saveBtn = document.createElement('button');
+	saveBtn.classList.add("reschedule-task-btn", "btn");
+	saveBtn.type = "submit";
+	saveBtn.innerHTML = "Save";
+	saveBtn.addEventListener("click", saveScheduleEdit);
+
+	const cancelBtn = document.createElement('button');
+	cancelBtn.classList.add("cancel-task-reschedule-btn", "btn");
+	cancelBtn.type = "submit";
+	cancelBtn.innerHTML = "Cancel";
+	// 都套用同一個function
+	cancelBtn.addEventListener("click", cancelTaskEdit);
+
+	form.append(input, saveBtn, cancelBtn);
+	currentDateDiv.append(form);
+}
+
+// save task name after edit(task detail跟大綱部分名稱都要改動)
+function saveScheduleEdit(e) {
+	e.preventDefault();
+	// 位置與sectionTitle一樣
+	const taskSchedule = e.target.parentNode.parentNode;
+	// same
+	const form = e.target.parentNode;
+	// same
+	const inputBox = e.target.previousSibling;	
+	let inputValue = inputBox.value;
+	inputValue = inputValue.trim();
+	// 位置不太一樣，將previousSibling改為
+	const scheduleSpan = e.target.parentNode.previousElementSibling;
+
+	const taskId = Number(scheduleSpan.getAttribute("current-task-id"));
+
+	// 對應要改
+	taskSchedule.removeChild(form);
+	scheduleSpan.innerHTML = inputValue;
+	scheduleSpan.style.display = "block";
+	const data = {};
+
+	const taskScheduleSpan = document.querySelectorAll(`[current-task-id="${taskId}"]`)[2];
+	if (inputValue) {
+		data.due_date = inputValue;
+		editDataById('task', taskId, data);
+		taskScheduleSpan.innerHTML = inputValue;
+	} else {
+		data.due_date = null;
+		editDataById('task', taskId, data);
+		taskScheduleSpan.innerHTML = 'Click to reschedule'
+	}
+}
+
+// editing task description
+// function to replace task title span with form(with input and buttons) 
+function showEditDescriptionForm(e) {
+	const currentDescriptionSpan = e.target;
+	const currentDescriptionDiv = currentDescriptionSpan.parentNode;
+	const currentDescriptionValue = currentDescriptionSpan.innerHTML;
+	currentDescriptionSpan.style.display = 'none';
+
+	const form = document.createElement('form');
+	form.classList.add("task-description-form");
+	const textarea = document.createElement('textarea');
+	textarea.classList.add("description-task-textarea")
+
+	if (currentDescriptionValue === 'Click to add description to task...') {
+		textarea.value = '';
+		textarea.placeholder = "Type your task description here...";	
+	} else {
+		textarea.value = currentDescriptionValue;		
+	}
+
+	const saveBtn = document.createElement('button');
+	saveBtn.classList.add("description-task-btn", "btn");
+	saveBtn.type = "submit";
+	saveBtn.innerHTML = "Save";
+	saveBtn.addEventListener("click", saveDescriptionEdit);
+
+	const cancelBtn = document.createElement('button');
+	cancelBtn.classList.add("cancel-task-description-btn", "btn");
+	cancelBtn.type = "submit";
+	cancelBtn.innerHTML = "Cancel";
+	// 都套用同一個function
+	cancelBtn.addEventListener("click", cancelTaskEdit);
+
+	form.append(textarea, saveBtn, cancelBtn);
+	currentDescriptionDiv.append(form);
+}
+
+// save task name after edit(task detail跟大綱部分名稱都要改動)
+function saveDescriptionEdit(e) {
+	e.preventDefault();
+	const originDescription = document.getElementsByClassName('current-task-description')[0].innerHTML;
+
+	// 位置與sectionTitle一樣
+	const taskDescription = e.target.parentNode.parentNode;
+	// same
+	const form = e.target.parentNode;
+	// same
+	const inputBox = e.target.previousSibling;
+	let inputValue = inputBox.value;
+	inputValue = inputValue.trim();
+	// 位置不太一樣，將previousSibling改為
+	const descriptionSpan = e.target.parentNode.previousElementSibling;
+	const taskId = Number(descriptionSpan.getAttribute("current-task-id"));
+
+	// 對應要改
+	taskDescription.removeChild(form);
+	descriptionSpan.innerHTML = inputValue;
+	descriptionSpan.style.display = "block";
+	const data = {};
+
+	const taskDescriptionSpan = document.querySelectorAll(`[current-task-id="${taskId}"]`)[3];
+
+	if (inputValue.length > 150) {
+		swal(`Task description should remain less than 150 characters.`);
+		taskDescriptionSpan.innerHTML = originDescription;
+		return;
+	}
+
+	if (inputValue) {
+		data.description = inputValue;
+		editDataById('task', taskId, data);
+		taskDescriptionSpan.innerHTML = inputValue;
+	} else {
+		data.description = null;
+		editDataById('task', taskId, data);
+		taskDescriptionSpan.innerHTML = 'Click to add description to task...';
+	}
+}
+

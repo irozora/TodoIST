@@ -86,7 +86,8 @@
 				<br>
 				<textarea type="text" placeholder="Add some description..." rows="3" cols="55" id="task-description" name="task-description"></textarea>
 				<br>
-				<input type="text" placeholder="Add due date..." id="datepicker" name="date-picker"/>
+				<input type="date" id="datepicker" name="date-picker">
+
 				<br>
 				<button type="submit" class="btn btn-outline-secondary" id="create-task-btn">Create Task</button>
 			</form>
@@ -98,7 +99,7 @@
 				<div id="current-task-header">
 					<!-- 這個div只放task所屬的project名稱 (也可能改放所屬section名稱) -->
 					<div id="task-belong-project-name" class="current-project-name">
-						<h4>lalalallalallalla</h4>
+						<h5>當前project名稱</h5>
 					</div>
 					<div>
 						<span class="close">x</span>
@@ -109,13 +110,17 @@
 				<div id="current-name-isComplete">
 					<!-- isComplete checkbox -->
 					<div id="current-task-completion">
-						<input type="checkbox" class="isComplete task-isComplete" />
+						<label class="checkbox-label">
+							<input type="checkbox" class="isComplete task-isComplete" />
+							<span class="checkMark"></span>
+						</label>
+						<!-- <input type="checkbox" class="isComplete task-isComplete" /> -->
 					</div>
 
 					<!-- task名稱 -->
 					<div id="current-task-name">
 						<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
-						<span>到時候這邊會顯示task名稱</span>
+						<span class="current-task-name"></span>
 					</div>
 				</div>
 
@@ -123,13 +128,13 @@
 				<div id="current-due-date">
 					<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
 					<!-- 有的話放字串，沒有的話就寫no due date -->
-					Due Date: <span>2020/12/26</span>
-					<!-- <input type="text" placeholder="Add due date..." id="current-datepicker" name="date-picker"/> -->
+					<p>Due Date: </p><span class="current-due-date"></span>
+					<!-- <input type="date" placeholder="Add due date..." id="current-datepicker" name="date-picker"/> -->
 				</div>
 
 				<div id="current-task-description">
 					<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
-					<span>這邊是隨便亂打的task敘述，原則上字數應該是會限制在150字以內...吧?現在後面這邊是gibberish啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦</span>
+					<span class="current-task-description"></span>
 				</div>
 
 				<!-- 預留給comment與upload -->

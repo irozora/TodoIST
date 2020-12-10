@@ -169,7 +169,7 @@ const getTask = async (req, res) => {
 
     const data = await Task.getTask(taskId);
 
-    if (!data.errno) {
+    if (data.errno) {
         return res.status(400).json({ error: `Something wrong occurred during data retrieve.` });
     }
 
@@ -186,8 +186,7 @@ const getTask = async (req, res) => {
 //     isComplete
 // }
 const editTask = async (req, res) => {
-    const { body } = req;
-    const { data } = body;
+    const { name, description, due_date, isComplete } = req.body;
     const taskId = Number(req.params.id);
 
     const checkTask = await Task.checkTask(taskId);
@@ -196,21 +195,27 @@ const editTask = async (req, res) => {
     }
 
     const updateTaskInfo = {};
-    if (data.name) {
-        updateTaskInfo.name = data.name;
+    if (name) {
+        updateTaskInfo.name = name;
     }
-    if (data.description) {
-        updateTaskInfo.description = data.description;
+
+    if (description === null) {
+        updateTaskInfo.description = null;
+    } else if (description) {
+        updateTaskInfo.description = description;
     }
-    if (data.due_date) {
-        updateTaskInfo.due_date = data.due_date;
+
+    if (due_date === null) {
+        updateTaskInfo.due_date = null;
+    } else if (due_date) {
+        updateTaskInfo.due_date = due_date;
     }
-    if (data.isComplete) {
-        updateTaskInfo.isComplete = Number(data.isComplete);
+
+    if (isComplete) {
+        updateTaskInfo.isComplete = Number(isComplete);
     }
 
     const result = await Task.editTask(taskId, updateTaskInfo);
-
     if (result.errno) {
         return res.status(400).json({ error: `Task info update failed. Something wrong occurred.` });
     }

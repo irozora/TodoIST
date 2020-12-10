@@ -1,4 +1,3 @@
-const { result } = require('lodash');
 const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon')
 
 // 新增task前先檢查以防撞車
@@ -121,7 +120,7 @@ const getTasks = async (sectionIds) => {
 }
 
 const getTask = async (taskId) => {
-    const result = await query(`SELECT name, description, due_date, isComplete FROM task WHERE id=?;`, taskId);
+    const result = await query(`SELECT name, description, due_date, isComplete FROM task WHERE id = ?;`, taskId);
     return result;
 }
 
@@ -134,13 +133,21 @@ const getTask = async (taskId) => {
 //     isComplete
 // }
 const editTask = async (taskId, data) => {
-    let query = `UPDATE task SET`;
-    for (const key in data) {
-        query += ` ${key} = ${data[key]},`;
+    let sqlQuery = `UPDATE task SET`;
+
+    if (data.due_date === null) {
+        sqlQuery += ` due_date = NULL,`
+    } else if (data.description === null) {
+        sqlQuery += ` description = NULL,`
+    } else {
+        for (const key in data) {
+            sqlQuery += ` ${key} = '${data[key]}',`;
+        }
     }
+
     // remove last comma from query
-    let updateQuery = query.slice(0, -1);
-    updateQuery += ` FROM task WHERE id = ?;`;
+    let updateQuery = sqlQuery.slice(0, -1);
+    updateQuery += ` WHERE id = ?;`;
 
     try {
         await startTransaction();

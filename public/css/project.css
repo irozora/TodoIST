@@ -4,8 +4,9 @@
   position:absolute;
   height: 100%;
   width: 18%;
-  background-image: linear-gradient(to right, rgb(255, 130, 130),  rgb(87, 168, 137));
-
+  /* background-image: linear-gradient(to right, rgb(255, 130, 130),  rgb(87, 168, 137)); */
+  background-image: linear-gradient(to right, rgb(163, 91, 43), rgb(207, 66, 66));
+  /* background-image: linear-gradient(to left, #c90505, #F28705); */
   display: flex;
   flex-direction: column;
 }
@@ -22,7 +23,6 @@
 #header-bar > a {
   margin: 0 auto;
   display: block;
-  /* width: 80%; */
   text-align: center;
 }
 
@@ -110,6 +110,7 @@
 #current-task-detail {
   color: rgb(228, 227, 227);
   background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114));
+  /* background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245)); */
   margin: 25vh auto; 
   padding: 20px;
   border: 1px solid white;
@@ -129,7 +130,9 @@
 
 #current-task-detail {
   width: 50%; 
-  background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 114, 140));
+  /* background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114)); */
+  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(74, 89, 173));
+  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -137,8 +140,8 @@
 
 #current-task-detail > * {
   width: 90%;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-top: 0.7em;
+  margin-bottom: 0.7em;
 }
 
 #current-task-header,
@@ -153,6 +156,10 @@
 
 .task-isComplete {
   margin: 0;
+}
+
+.current-project-name > h5 {
+  padding-top: 0.1em;
 }
 
 #current-task-completion {
@@ -170,12 +177,46 @@
   font-size: 1.2em;
 }
 
-#current-task-description {
+#current-task-description,
+.current-due-date {
   align-self: center;
   background-color: rgba(0,0,0,0.4);
-  padding: 1em;
+}
+
+#current-task-description {
   border-radius: 1em;
-  width: 100%
+  padding: 1em;
+  width: 90%;
+  word-wrap: break-word;
+}
+
+#current-due-date {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#current-due-date > p {
+  margin-right: 0.8em;
+}
+
+.current-due-date {
+  border-radius: 0.5em;
+  padding: 0.5em 1em;
+  width: 28%;
+}
+
+.task-description-form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.description-task-textarea {
+  width: 100%;
+  background-color: transparent;
+  color: rgb(228, 227, 227);
+  margin-bottom: 0.5em;
 }
 
 .close,
@@ -196,7 +237,9 @@
   padding: 2em 2em 2em 10%;
   margin-bottom: 20px;
   position: fixed;
-  background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248));
+  /* background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248)); */
+  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245));
+
   z-index: 1;
 }
 
@@ -216,8 +259,9 @@
 
 #project-container {
   margin-right: 0;
-  padding-top: 10%;;
-  background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248));
+  padding-top: 10%;
+  /* background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248)); */
+  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245));
 }
 
 #project-container > * {
@@ -246,6 +290,7 @@
 .task-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .section-header {
@@ -293,24 +338,56 @@
   box-shadow: none;
 }
 
+.rename-task-input,
+.reschedule-task-input {
+  margin-bottom: 0;
+}
+
 .rename-section-btn,
-.rename-section-btn:hover {
-  padding: 10px;
+.rename-section-btn:hover,
+.rename-task-btn,
+.rename-task-btn:hover,
+.reschedule-task-btn,
+.reschedule-task-btn:hover,
+.description-task-btn,
+.description-task-btn:hover {
+  padding: 0.7em;
   background-color: #ee4b00;
   color: rgb(228, 227, 227);
   margin-top: 0;
 }
 
+.rename-task-btn,
+.rename-task-btn:hover,
+.reschedule-task-btn,
+.reschedule-task-btn:hover,
+.description-task-btn,
+.description-task-btn:hover {
+  padding: 0.3em;
+}
+
 .cancel-section-rename-btn,
-.cancel-section-rename-btn:hover {
-  padding: 10px;
+.cancel-section-rename-btn:hover,
+.cancel-task-reschedule-btn,
+.cancel-task-reschedule-btn:hover,
+.cancel-task-description-btn,
+.cancel-task-description:hover {
+  padding: 0px;
   color: rgb(228, 227, 227);
   margin-top: 0;
+  margin-left: 1em;
+  vertical-align: middle;
+}
+
+.cancel-task-rename-btn,
+.cancel-task-rename-btn:hover {
+  color: rgb(228, 227, 227);
 }
 
 .rename-section-input {
   margin-bottom: 0;
   line-height: 0;
+  padding: 0.2rem 0.75rem;
 }
 
 .remove-section-icon,
@@ -345,9 +422,84 @@
   cursor: pointer;
 }
 
-/* .isComplete {
+.cross-out {
+  text-decoration: line-through;
+} 
 
-} */
+.section-title-form,
+.task-title-form {
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+}
+
+.task-handle-bar {
+  display: flex;
+  flex-direction: row;
+}
+
+
+/*===== custom checkbox =====*/
+.checkbox-label {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 1.6em;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkMark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0.7em;
+  width: 0.7em;
+  background-color: #eee;
+}
+
+.checkbox-label:hover input ~ .checkMark {
+  background-color: #ccc;
+}
+
+.checkbox-label input:checked ~ .checkMark {
+  background-color: #2196F3;
+}
+
+.checkMark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-label input:checked ~ .checkMark:after {
+  display: block;
+}
+
+.checkbox-label .checkMark:after {
+  left: 6px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
 
 /* ===== Custom sweet alert box ===== */
 .swal-modal{
