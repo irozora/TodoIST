@@ -254,7 +254,6 @@ function getIndexInParent (el) {
 function checkingTask (isComplete, taskCheckbox, taskNameSpan) {
 	switch (isComplete) {
 		case 1: 
-			console.log(taskCheckbox)
 			taskCheckbox.checked = true;
 			taskNameSpan.classList.add('cross-out');
 			break;
@@ -576,6 +575,8 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 	checkboxLabel.classList.add('checkbox-label');
 	const checkbox = document.createElement('input');
 	checkbox.type = "checkbox";
+	
+	checkbox.addEventListener('click' ,completeTask);
 
 	const customCheckBox = document.createElement('span');
 	customCheckBox.classList.add('checkMark');
@@ -827,8 +828,10 @@ async function showTaskDetailForm(e) {
 
 		const taskIsComplete = document.getElementsByClassName('task-isComplete')[0];
 		taskIsComplete.setAttribute('current-task-id', targetTaskId);
-		
+
 		checkingTask(isComplete, taskIsComplete, taskNameSpan);
+		taskIsComplete.addEventListener('click', completeFromTaskDetail);
+
 		
 		const taskDueDateSpan = document.getElementsByClassName('current-due-date')[0];
 		taskDueDateSpan.setAttribute('current-task-id', targetTaskId);
@@ -1090,3 +1093,43 @@ function saveDescriptionEdit(e) {
 	}
 }
 
+// Complete task at main project container.
+function completeTask(e) {
+	const checkboxContainer = e.target.parentNode.parentNode;
+	const taskNameToCrossOut = checkboxContainer.nextElementSibling.firstElementChild;
+
+	const taskId = Number(taskNameToCrossOut.getAttribute('task-id'));
+	const type = 'task';
+	const data = {};
+	if (taskNameToCrossOut.classList.contains('cross-out')) {
+		data.isComplete = 0;
+		taskNameToCrossOut.classList.remove('cross-out');
+	} else {
+		data.isComplete = 1;
+		taskNameToCrossOut.classList.add('cross-out');
+	}
+	editDataById(type, taskId, data);
+}
+
+// Complete task at task detail form, need to update task status at both task detail form and project container.
+function completeFromTaskDetail(e) {
+	const currentNameToCrossOut = e.target.parentNode.parentNode.nextElementSibling.firstElementChild;
+	const taskId = Number(currentNameToCrossOut.getAttribute('current-task-id'));
+	const type = 'task';
+	const data = {};
+	const taskNameInSectionContainer = document.querySelectorAll(`[task-id="${taskId}"]`)[1];
+	const checkboxInSectionContainer = taskNameInSectionContainer.parentNode.previousElementSibling.lastElementChild.firstElementChild;
+	
+	if (currentNameToCrossOut.classList.contains('cross-out')) {
+		currentNameToCrossOut.classList.remove('cross-out');
+		taskNameInSectionContainer.classList.remove('cross-out');
+		checkboxInSectionContainer.checked = false;
+		data.isComplete = 0;
+	} else {
+		currentNameToCrossOut.classList.add('cross-out');
+		taskNameInSectionContainer.classList.add('cross-out');
+		checkboxInSectionContainer.checked = true;
+		data.isComplete = 1;
+	}
+	editDataById(type, taskId, data);
+}

@@ -211,7 +211,7 @@ const editTask = async (req, res) => {
         updateTaskInfo.due_date = due_date;
     }
 
-    if (isComplete) {
+    if (isComplete || isComplete === 0) {
         updateTaskInfo.isComplete = Number(isComplete);
     }
 
