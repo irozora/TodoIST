@@ -785,7 +785,7 @@ function removeTask(e) {
 
 				updateOrder("task", data);
 				taskContainer.removeChild(targetTask);
-				swal("Section and tasks deleted!");
+				swal("Task deleted!");
 			}
 		});
 	}

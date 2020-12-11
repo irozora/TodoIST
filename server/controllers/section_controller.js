@@ -34,10 +34,12 @@ const updateSectionOrder = async (req, res) => {
 
     let checkId;
     let action = delete_section || move_section;
-    if (typeof action.id !== "number" || typeof action.section_order !== "number") {
-        return res.status(400).json({ error: "Data type incorrect for altering section." });
-    } else {
-        checkId = action.id;
+    for (const key in action) {
+        if (typeof action[key] !== 'number') {
+            return res.status(400).json({ error: "Data type incorrect for altering task." });
+        } else {
+            checkId = action.id;
+        }
     }
 
     const checkSection = await Section.checkSection(checkId);

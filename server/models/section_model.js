@@ -1,9 +1,9 @@
-const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon')
+const { query, startTransaction, endWithCommit, rollback } = require('./mysqlCon');
 
 const createSection = async (section) => {
     try {
         await startTransaction();
-        const result = await query(`INSERT INTO section SET ?`,section);
+        const result = await query(`INSERT INTO section SET ?`, section);
         await endWithCommit();
         return result;
     } catch(error) {

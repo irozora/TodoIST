@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const Task = require("../models/task_model");
-const Section = require('../models/section_model')
+const Section = require('../models/section_model');
 
 const createTask = async (req, res) => {
     const { body } = req;
@@ -85,16 +85,20 @@ const updateTaskOrder = async (req, res) => {
 
     let checkId;
     let action = delete_task || move_task;
-    if (typeof action.id !== "number" || typeof action.task_order !== "number"|| typeof action.section_id !== "number") {
-        return res.status(400).json({ error: "Data type incorrect for altering task." });
-    } else {
-        checkId = action.id;
+    for (const key in action) {
+        if (typeof action[key] !== 'number') {
+            return res.status(400).json({ error: "Data type incorrect for altering task." });
+        } else {
+            checkId = action.id;
+        }
     }
 
     for (let i = 0; i < update.length; i ++) {
         let currentUpdate = update[i];
-        if (typeof currentUpdate.move !== "number" || typeof currentUpdate.section_id !== "number" || typeof currentUpdate.from !== "number" || typeof currentUpdate.end !== "number") {
-            return res.status(400).json({ error: "Data type incorrect for updating task." });
+        for (const key in currentUpdate) {
+            if (typeof currentUpdate[key] !== 'number') {
+                return res.status(400).json({ error: "Data type incorrect for updating task." });
+            }
         }
     }
 
