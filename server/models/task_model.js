@@ -15,7 +15,7 @@ const createTask = async (task) => {
         return result;
     } catch(error) {
         await rollback();
-        return error;
+        return { error };
     }
 };
 
@@ -110,7 +110,7 @@ const updateTaskOrder = async (data) => {
         return { updateOriginResult, updateNewResult, result };
     } catch(error) {
         await rollback();
-        return error;
+        return { error };
     }
 }
 
@@ -156,7 +156,7 @@ const editTask = async (taskId, data) => {
         return result;
     } catch (error) {
         await rollback();
-        return error;
+        return { error };
     }
 }
 

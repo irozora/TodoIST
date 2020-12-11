@@ -8,7 +8,7 @@ const createSection = async (section) => {
         return result;
     } catch(error) {
         await rollback();
-        return error;
+        return { error };
     }
 };
 
@@ -50,7 +50,7 @@ const updateSectionOrder = async (data) => {
         return { sectionUpdate, result };
     } catch(error) {
         await rollback();
-        return error;
+        return { error };
     }
 }
 
@@ -68,7 +68,7 @@ const editSection = async (sectionId, sectionName) => {
         return result;
     } catch (error) {
         await rollback();
-        return error;
+        return { error };
     }
 }
 
