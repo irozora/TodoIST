@@ -64,7 +64,7 @@ function signUp(e) {
 	    	return;
         } else {
             window.localStorage.setItem('Authorization', `Bearer ${result.data.access_token}`);
-            window.location = `/project.html?id=1`;
+            window.location = `/project.html?id=2`;
         }
 	})
 	.catch(error => {
