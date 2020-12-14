@@ -1,11 +1,20 @@
-const projectIdQuery = window.location.search;
-let projectId = new URLSearchParams(projectIdQuery).get('id');
-projectId = Number(projectId);
+// const projectIdQuery = window.location.search;
+// let projectId = new URLSearchParams(projectIdQuery).get('id');
+// projectId = Number(projectId);
+// const accessToken = localStorage.getItem('Authorization');
+// const headers = {
+// 	'Content-Type': 'application/json',
+// 	'Authorization': accessToken
+// };
+// if (!accessToken) {
+//     window.location = `/home.html`;
+// }
 
 if (!projectId) {
-    window.location = `${window.location.protocol}//${window.location.hostname}:3000/404.html`;
+    window.location = `/404.html`;
 } else {
 	getProjectInfo();
+	getSectionsAndTasks();
 }
 
 const socket = io();
@@ -219,8 +228,21 @@ dragulaProject.on('drop', (el, target, source, sibling) => {
 	updateOrder("section",data);
 });
 
-// task and section rendering
+// project name rendering
 function getProjectInfo() {
+	fetch(`/api/1.0/project/${projectId}`)
+	.then(res => res.json())
+	.then(result => {
+		const projectTitle = document.getElementById('title-section').firstElementChild;
+		projectTitle.innerHTML = result.data[0].name;
+	})
+	.catch(error => {
+		console.log(error);
+	})
+}
+
+// task and section rendering
+function getSectionsAndTasks() {
 	fetch(`/api/1.0/task/list?id=${projectId}`)
 	.then(res => res.json())
 	.then(result => {
@@ -417,9 +439,7 @@ async function addTask (e) {
 function getInsertedDataId (type, data) {
 	let id = fetch(`/api/1.0/${type}/create`, {
 		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
+		headers: headers,
 		body: JSON.stringify(data)
 	})
 	.then(res => res.json())
@@ -620,9 +640,7 @@ function createTaskElement(taskName, taskOrder, taskId, isComplete) {
 function editDataById (type, id, data) {
 	fetch(`/api/1.0/${type}/${id}`, {
 		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
+		headers: headers,
 		body: JSON.stringify(data)
 	})
 	.then(res => res.json())
@@ -658,21 +676,6 @@ function saveSectionEdit(e) {
 	};
 
 	editDataById('section', sectionId, data);
-
-	// fetch(`/api/1.0/section/${sectionId}`, {
-	// 	method: 'POST',
-	// 	headers: {
-    // 		'Content-Type': 'application/json'
-	//     },
-	// 	body: JSON.stringify(data)
-	// })
-	// .then(res => res.json())
-	// .then(result => {
-	// 	console.log(result);
-	// })
-	// .catch(error => {
-	// 	console.log(error)
-	// })
 }
 
 // cancel section edit
@@ -795,14 +798,17 @@ function removeTask(e) {
 function updateOrder(type, data) {
 	fetch(`/api/1.0/${type}/update`, {
 		method: 'POST',
-		headers: {
-    		'Content-Type': 'application/json'
-	    },
+		headers: headers,
 		body: JSON.stringify(data)
 	})
 	.then(res => {
 		console.log(res.status)
-		return res.json();
+		if (res.status === 200) {
+			return res.json();
+		} else {
+			window.location = `/home.html`;
+			return;
+		}
 	})
 	.then(result => {
 		console.log(result);

@@ -1,12 +1,14 @@
+body {
+  background-image: url("../img/bg.jpg");
+}
+
 /*===== elements on left bar =====*/
 #side-bar-on-left {
   overflow:hidden;  
   position:absolute;
   height: 100%;
-  width: 18%;
-  /* background-image: linear-gradient(to right, rgb(255, 130, 130),  rgb(87, 168, 137)); */
-  background-image: linear-gradient(to right, rgb(163, 91, 43), rgb(207, 66, 66));
-  /* background-image: linear-gradient(to left, #c90505, #F28705); */
+  width: 15%;
+  background-color: rgba(177, 85, 85, 0.6); 
   display: flex;
   flex-direction: column;
 }
@@ -27,7 +29,7 @@
 }
 
 #header-bar > a > img {
-  width: 150px;
+  width: 130px;
   height: 50px;
 }
 
@@ -38,8 +40,8 @@
 }
 
 #profile-div > img {
-  width: 150px;
-  height: 200px;
+  width: 100px;
+  height: 125px;
   margin: 0 auto;
   border-radius: 1em;
 }
@@ -109,8 +111,8 @@
 #task-box,
 #current-task-detail {
   color: rgb(228, 227, 227);
-  background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114));
-  /* background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245)); */
+  background-color: rgb(177, 85, 85);
+
   margin: 25vh auto; 
   padding: 20px;
   border: 1px solid white;
@@ -130,8 +132,7 @@
 
 #current-task-detail {
   width: 50%; 
-  /* background-image: linear-gradient(to right,  rgb(74, 89, 173), rgb(219, 177, 114)); */
-  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(74, 89, 173));
+  /* background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(74, 89, 173)); */
   
   display: flex;
   flex-direction: column;
@@ -228,18 +229,17 @@
 
 /*===== elements on right content =====*/
 #content-on-right {
-  margin-left: 18%;
+  margin-left: 15%;
   margin-right: 0;
 }
 
 #content-on-right > #title-section {
   width: 85%;
-  padding: 2em 2em 2em 10%;
+  padding: 1em 2em 1em 9em;
   margin-bottom: 20px;
   position: fixed;
-  /* background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248)); */
-  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245));
-
+  background-image: url("../img/bg.jpg");
+  background-position: top 0% left 37.5%;
   z-index: 1;
 }
 
@@ -261,7 +261,7 @@
   margin-right: 0;
   padding-top: 10%;
   /* background-image: linear-gradient(to right, rgb(87, 168, 137), rgb(141, 191, 248)); */
-  background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245));
+  /* background-image: linear-gradient(to right, rgb(207, 66, 66), rgb(113, 174, 245)); */
 }
 
 #project-container > * {
@@ -424,6 +424,8 @@
 
 .cross-out {
   text-decoration: line-through;
+  color: rgb(201, 201, 201);
+  font-style: italic;
 } 
 
 .section-title-form,

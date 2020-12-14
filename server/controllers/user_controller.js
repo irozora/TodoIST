@@ -91,7 +91,25 @@ const nativeSignIn = async (email, password) => {
     }
 }
 
+const getProfile = async (req, res) => {
+    const { email } = req;
+    if (!email) {
+        res.status(400).send({error:'Authentication required to access user info.'});
+        return;
+    }
+
+    const result = await User.getProfile(email);
+
+    if (result.errno) {
+        return res.status(400).json({ error: `Something is wrong retrieving user data.` });
+    }
+
+    return res.status(200).json({ result });
+
+}
+
 module.exports = { 
     signUp,
-    signIn
+    signIn,
+    getProfile
 }

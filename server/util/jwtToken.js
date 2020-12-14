@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const tokenSecret = process.env.JWT_TOKEN_SECRET;
-const expiresIn = process.env.TOKEN_EXPIRE || 3600000;
+const expiresIn = process.env.TOKEN_EXPIRE || 360000000;
 
 const generateToken = async (data) => {
     // password should already bcrypt at this point
@@ -22,10 +22,10 @@ const authenticateToken = async (req, res, next) => {
     const accessToken = token ? token.replace('Bearer ', '') : token;
 
     jwt.verify(accessToken, tokenSecret, (error, user) => {
-      if (error) return res.status(400).send({error: 'Wrong Request: authorization is required.'});
+        if (error) return res.status(400).send({error: 'Wrong Request: authorization is required.'});
       
-      req.email = user.email;
-      next();
+        req.email = user.email;
+        next();
     })
 }
 

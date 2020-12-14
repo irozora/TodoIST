@@ -21,6 +21,7 @@ app.use('/api/' + process.env.API_VERSION,
     [
         require('./server/routes/task_route'),
         require('./server/routes/section_route'),
+        require('./server/routes/project_route'),
         require('./server/routes/user_route')
     ]
 );

@@ -53,8 +53,22 @@ const nativeSignIn = async (email, password) => {
     }
 } 
 
+const getProfile = async (email) => {
+    try {
+        await startTransaction();
+        const users = await query(`SELECT id, name, email, picture FROM user WHERE email=?;`, email);
+        const user = users[0]
+        await endWithCommit();
+        return { user };
+    } catch (error) {
+        await rollback();
+        return { error };
+    }
+}
+
 module.exports = { 
     checkEmail,
     signUp,
-    nativeSignIn
+    nativeSignIn,
+    getProfile
 }

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TodoIST</title>
+	<title>i-Bean</title>
 	<link rel="shortcut icon" href="#" />
 	<link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css" rel="stylesheet"  type='text/css'>
 
@@ -19,13 +19,13 @@
 	<div id="side-bar-on-left">    
 		<div id="header-bar">
 			<a href="./main.html" title="Back to your personal main page">
-				<img src="./img/d5ddbad1-6f8e-4795-a164-f166ab934b42_200x200.png" alt="user photo">
+				<img src="./img/i-bean_logo.png" alt="">
 			</a>
 		</div>
 
 		<div id="profile-div">
 			<img src="https://ibeanimages.s3-ap-northeast-1.amazonaws.com/avatar/akira-Rzxour_EMY8-unsplash.jpg" alt="user photo">
-			<span id="user-name">Fake User</span>
+			<span id="user-name"></span>
 		</div>
 
 		<div id="project-bar">
@@ -34,31 +34,13 @@
 			</div>
 			
 			<div id="project-list">
-				<a href="?id=1">
-					<div>
-						假project 1號
-					</div>
-				</a>
-
-				<a href="?id=2">
-					<div>
-						假project 2號
-					</div>
-				</a>
-
-				<a href="?id=3">
-					<div>
-						假project 3號
-					</div>
-				</a>
-
 			</div>
 		</div>
 	</div>
 
 	<div id="content-on-right">
 		<div id="title-section">
-			<h5>假project 1號</h5>
+			<h5></h5>
 			<button id="section-form-btn" class="btn btn-outline-secondary">+ Add Section</button>
 		</div>
 
@@ -114,7 +96,6 @@
 							<input type="checkbox" class="isComplete task-isComplete" />
 							<span class="checkMark"></span>
 						</label>
-						<!-- <input type="checkbox" class="isComplete task-isComplete" /> -->
 					</div>
 
 					<!-- task名稱 -->
@@ -129,7 +110,6 @@
 					<!-- 使用者按下後預計會觸發event listener，變成一個input跟一個submit button -->
 					<!-- 有的話放字串，沒有的話就寫no due date -->
 					<p>Due Date: </p><span class="current-due-date"></span>
-					<!-- <input type="date" placeholder="Add due date..." id="current-datepicker" name="date-picker"/> -->
 				</div>
 
 				<div id="current-task-description">
@@ -158,6 +138,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
 
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="./js/project_user.js"></script>
 	<script src="./js/project.js"></script>
 </body>
 </html>
