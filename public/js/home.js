@@ -64,7 +64,7 @@ function signUp(e) {
 	    	return;
         } else {
             window.localStorage.setItem('Authorization', `Bearer ${result.data.access_token}`);
-            window.location = `/project.html?id=2`;
+            window.location = `/main.html`;
         }
 	})
 	.catch(error => {
@@ -106,11 +106,10 @@ function nativeSignIn(e) {
 	    	return;
         } else {
             window.localStorage.setItem('Authorization', `Bearer ${result.data.access_token}`);
-            window.location = `/project.html?id=1`;
+            window.location = `/main.html`;
         }
 	})
 	.catch(error => {
 		console.log(error)
 	})
-
 }

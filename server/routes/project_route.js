@@ -12,10 +12,10 @@ router.route('/project/:id')
 router.route('/project/remove')
     .post(wrapAsync(authenticateToken), wrapAsync(removeProject));
 
-router.route('/project/:id')
-    .post(wrapAsync(authenticateToken), wrapAsync(editProject));
-
 router.route('/project/list')
     .post(wrapAsync(authenticateToken), wrapAsync(getProjects));
+
+router.route('/project/:id')
+    .post(wrapAsync(authenticateToken), wrapAsync(editProject));
 
 module.exports = router;

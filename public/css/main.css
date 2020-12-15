@@ -1,0 +1,203 @@
+body {
+  background-image: url("../img/bg.jpg");
+}
+
+/*===== elements on left bar =====*/
+#side-bar-on-left {
+  overflow:hidden;  
+  position:absolute;
+  height: 100%;
+  width: 15%;
+  background-color: rgba(177, 85, 85, 0.6); 
+  display: flex;
+  flex-direction: column;
+}
+
+#side-bar-on-left > div {
+  padding-top: 10px;
+}
+
+#side-bar-on-left > a:hover {
+  color: black;
+  background-color: white;
+}
+
+#header-bar > a {
+  margin: 0 auto;
+  display: block;
+  text-align: center;
+}
+
+#header-bar > a > img {
+  width: 130px;
+  height: 50px;
+}
+
+#profile-div {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1em;
+}
+
+#profile-div > img {
+  width: 100px;
+  height: 125px;
+  margin: 0 auto;
+  border-radius: 1em;
+}
+
+#profile-div > span {
+  padding-top: 0.8em;
+  text-align: center;
+}
+
+/* #project-bar, 
+#project-list,
+.project-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+} */
+
+/* .project-title {
+  margin-bottom: 1em;
+} */
+
+/* .project-title,
+#project-list {
+  width: 100%;
+} */
+
+/* #project-bar .project-title {
+  margin-top: 1em;
+  font-size: 1.2em;
+} */
+
+/*  */
+/*===== pop up for adding section and/or task =====*/
+
+#project-pop-up {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  
+  overflow: auto; 
+  color: rgb(228, 227, 227);
+  background-color: rgb(0,0,0); 
+  background-color: rgba(0,0,0,0.4); 
+}
+
+#project-box {
+  color: rgb(228, 227, 227);
+  background-color: rgb(177, 85, 85);
+
+  margin: 25vh auto; 
+  padding: 20px;
+  border: 1px solid white;
+  width: 40%; 
+  border-radius: 1em;
+}
+
+
+.project-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.project-header {
+  padding-bottom: 0.5em;
+}
+
+.project-header .project-title {
+  flex-grow: 1;
+}
+
+.close, 
+.close:hover {
+  color: rgb(228, 227, 227);
+  cursor: pointer;
+}
+
+
+/*===== elements on right section =====*/
+#content-on-right {
+  display: flex;
+  flex-direction: column;
+  width: 85%;
+  margin-left: 15%;
+}
+
+#project-btn-div {
+    margin-left: 15%;
+    margin-top: 5%;
+}
+
+#project-category {
+    margin-left: 15%;
+    margin-top: 1em;
+    padding: 1em;
+    width: 70%;
+    border-bottom: 1px solid rgb(170, 170, 170);
+}
+
+#project-form-btn {
+    color: rgb(88, 88, 88);
+    background-color: rgb(228, 227, 227);
+    border: none;
+    padding: 1.8em 1.3em;
+}
+
+#project-list {
+    margin-top: 1em;
+    margin-left: 15%;
+    width: 70%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#project-list > a {
+  text-align: center;
+  color: rgb(88, 88, 88);
+  background-color: rgb(228, 227, 227);
+  border: none;
+  padding: 1.5em 1em;
+  margin-left: 1em;
+  margin-top: 0.5em;
+  width: 30%
+}
+
+#project-list > a:hover {
+  color: rgb(228, 227, 227); 
+  background-color: rgb(172, 74, 74);
+  transition: 0.4s;
+}
+
+/* ===== Custom sweet alert box ===== */
+.swal-modal{
+  background-color: rgb(58, 58, 58) !important;
+  width: 350px !important;
+}
+
+.swal-title,
+.swal-text {
+  color: rgb(228, 227, 227) !important;
+}
+
+.swal-title:first-child {
+  margin-top: 13px !important;
+}
+
+.swal-button {
+  background-color: #e6ad03 !important;
+}
+
+.swal-button--cancel {
+  background-color: transparent !important;
+  color: rgb(228, 227, 227) !important;
+}
