@@ -39,6 +39,11 @@ const nativeSignIn = async (email, password) => {
         const users = await query(`SELECT id, name, email, password, picture, provider FROM user WHERE email=?;`, email);
         const user = users[0]
         
+        if (!user) {
+            await endWithCommit();
+            return {error: 'Email does not exist.'};
+        }
+
         if (!bcrypt.compareSync(password, user.password)){
             await endWithCommit();
             return {error: 'Incorrect password.'};
