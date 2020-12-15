@@ -4,6 +4,10 @@ const createSection = async (req, res) => {
     const { name } = req.body;
     const section_order = Number(req.body.section_order);
     const project_id = Number(req.body.project_id);
+    if (!name || !section_order || !project_id) {
+        res.status(400).send({error:'Lack of info to create section.'});
+        return;
+    }
 
     const section = {
         name,

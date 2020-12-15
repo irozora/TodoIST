@@ -235,6 +235,8 @@ function getProjectInfo() {
 	.then(result => {
 		const projectTitle = document.getElementById('title-section').firstElementChild;
 		projectTitle.innerHTML = result.data[0].name;
+		const projectTitleInDetail = document.getElementById('task-belong-project-name').firstElementChild;
+		projectTitleInDetail.innerHTML = result.data[0].name;
 	})
 	.catch(error => {
 		console.log(error);
